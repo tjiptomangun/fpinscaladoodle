@@ -28,3 +28,5 @@
         def appendViaFoldLeft[A] (a1: List[A], a2: List[A]): List[A] = {
                 foldLeft (a1, a2) ((x, y) => Cons(y, x))
         }
+
+del all
