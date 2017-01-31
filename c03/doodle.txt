@@ -1,0 +1,106 @@
+Dig down with foldRight
+apply function from inner to outer
+since the function returns function with same signature it will evaluated and used by outer function recursively
+when will it be fully evaluated ?
+how g is created/interpreted in the next level?
+
+evaluate then fold
+@tailrec
+def foldLeft [A, B] (as: List[A], z: B) (f: (B, A) => B): B = {
+        as match {
+                case Nil =>
+                        z
+                case Cons(x, xs) =>
+                        foldLeft (xs, f(z, x)) (f)
+        }
+}
+
+
+fold then evaluate  
+def foldRight[A, B] (as: List[A], z: B) (f: (A, B) => B): B = {
+        as match {
+                case Nil => z
+                case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+        }
+}
+
+fold then evaluate to evaluate then fold
+def foldLeftViaFoldRight[A, B](l: List[A], z: B)(f: (B, A) => B): B = 
+  foldRight(l, (b:B) => b)((a,g) => b => g(f(b,a)))(z)
+
+notes
+-----
+the value of z is replaced anytime new value attained
+there should be tail recursive in last evaluation
+what is this tail recursive function ?
+that is the partially applied function with previous x and accepts 
+
+(A = Whatever)
+(B = f: (X) => X, in first iteration it is b:B => b)
+(g is instance of B, so it should be f:(X) => X)
+(return value of f(A, B) should be B which is f:(X) => X)
+(it also known that return value of (a,g) is a function that accepts b and returns B -- g(f(_:B, a)))
+(the mistery of g)
+(  the bottomost evaluation would be (b:B=>b) (x)  )
+(  )
+(this return value will be applied with z which is of whatever outer define it if case  Nil)
+try to emulate (a, g) =>b => g(f(b, a))
+
+iterasi 1
+
+  foldRight(l, (b:B) => b)((a,g) => b => g(f(b,a)))(z)
+
+  case Cons (l.head, l.tail) => f (l.head, foldRight(l.tail, (b:B) => b)((a,g) => b => g(f(b,a)))(z)
+
+//at lowest level  
+def foldRight[A, B] (as: List[A], z: B) (f: (A, B) => B): B = {
+        as match {
+                case Nil => z
+                case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+        }
+        returns z which is (b:B) =>b
+}
+
+//lowest + 1 level
+def foldRight[A, B] (as: List[A], z: B) (f: (A, B) => B): B = {
+        as match {
+                case Nil => z
+                case Cons(x, xs) => f(x, ((b:B) =>b)/*<- this is g*/ )
+        }
+//      returns f((x, (b:B) => b) =>   (b => ((b:B) => b) (f(b, a))   )  )(z)
+//              f((a,          g) =>   (b =>           g  (f(b, a))   )  )(z)
+//	returns Function(a, (b:B) => b) that returns a (partially applied) function that receive b and returns g(f(b, a)) and apply it to z
+//              and g is currently a function that accepts b and returns b it will returns result f(b, a)
+//              when z is applied ?
+}
+
+evaluate then fold
+@tailrec
+def foldLeft [A, B] (as: List[A], z: B) (f: (B, A) => B): B = {
+        as match {
+                case Nil =>
+                        z
+                case Cons(x, xs) =>
+                        foldLeft (xs, f(z, x)) (f)
+        }
+}
+
+
+fold then evaluate  
+def foldRight[A, B] (as: List[A], z: B) (f: (A, B) => B): B = {
+        as match {
+                case Nil => z
+                case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+        }
+}
+
+
+def foldRightViaFoldLeft[A, B](l: List[A}, z: B)(f: (A, B) => B): B =
+  foldLeft(l, g1:?) ((g2:?, a) => ???) 
+(evaluate then fold to fold then evaluate)
+what fold does ? fold the list from head
+what the function does ? -> evaluate element of list with previous result to give new result
+rather than evaluate this new function will fold first to end of list then evaluate
+what is the function that will force folding than do evaluation later ?
+there should be no tail recursive in last evaluation 
+we're not done with foldLeftViaFoldRight, see its notes
