@@ -178,11 +178,40 @@ object List{
 	def reverseWithFoldLeftViaFoldRight[A] (a1: List[A]): List[A] = {
 		foldLeftViaFoldRight (a1, Nil: List[A]) ((acc, a) => Cons(a, acc))
 	}
-	
+/*	
 	def foldRightViaFoldLeft [A, B] (l: List[A], z: B) (f: (A, B) => B): B = {
 		foldLeft(l, ???) ((???, a) => )
 	}
+*/
 
+	def addOne (l: List[Int]):List[Int]  = {
+		foldRight(l, Nil:List[Int]) ((a, acc) => Cons(a+1, acc))
+	}
+
+	def doubleToString (l: List[Double]): List[String] = { 
+		foldRight(l, Nil:List[String]) ((a, acc) => Cons(a.toString, acc))
+	}
+
+	def map [A, B] (as: List[A]) (f: A=>B): List[B] = {
+		foldRight(as, Nil:List[B]) ((a, acc) => Cons(f(a), acc))
+	}
+
+	def filter[A] (as: List[A]) (f: A=> Boolean): List[A] = {
+		foldRight(as, Nil:List[A]) ((a, acc) => 
+				if(f(a)) 
+					Cons(a, acc)
+				else
+					acc
+		) 
+	}
+
+	def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] = {
+		foldRight(as, Nil:List[B]) ((a, acc) => append(f(a) , acc))
+		
+	}
+	
+
+	
 }
 
 //ex. 3.8
@@ -192,9 +221,15 @@ val a = List (1, 2, 3, 4, 5, 6)
 val b = List (11, 12, 13)
 val c = List (25, 26, 27)
 val d = List(a, b, c)
+val j = List(.3, .6, .89, 1.4, 100.4)
 
-val e = List.concatViaFoldRight (d)
+val e = List.concatViaFoldRight(d)
 val f = List.reverse(e)
-val g = List.concatViaFoldLeft (d)
+val g = List.concatViaFoldLeft(d)
 val h = List.reverseWithFoldLeftViaFoldRight(e)
+val i = List.addOne(a)
+val k = List.doubleToString(j)
+val l = List.map(j)(_.toString)
+val m = List.filter(j)(_ <1.0)
+val n = List.flatMap(j)(i => List(i, i))
 

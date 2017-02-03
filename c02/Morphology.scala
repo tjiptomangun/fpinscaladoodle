@@ -76,9 +76,14 @@ val e = b(3)
 d(1.5)
 e(1.5)
 
+def someTypeOf2 (a:Int) (b:Double) : String = "A is "+ a + " B is "+b
+val f = someTypeOf2 _
+val g = f.apply(2)
 
-
-
+def B_to_B (a: Int) = a+2
+val b_to_b = B_to_B _
+def f (a: Int, b: Int => Int) = b(a)
+def g (a: Int, b: Int => Int): Int => Int
 
 
 

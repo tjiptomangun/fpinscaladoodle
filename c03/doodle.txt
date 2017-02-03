@@ -46,6 +46,9 @@ that is the partially applied function with previous x and accepts
 (this return value will be applied with z which is of whatever outer define it if case  Nil)
 try to emulate (a, g) =>b => g(f(b, a))
 
+g is a function that takes 2 parametres
+g(a) -> b -> zzzz
+
 iterasi 1
 
   foldRight(l, (b:B) => b)((a,g) => b => g(f(b,a)))(z)
