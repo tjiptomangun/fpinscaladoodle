@@ -232,4 +232,6 @@ val k = List.doubleToString(j)
 val l = List.map(j)(_.toString)
 val m = List.filter(j)(_ <1.0)
 val n = List.flatMap(j)(i => List(i, i))
+val test = n
+
 
