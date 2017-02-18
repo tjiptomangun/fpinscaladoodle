@@ -37,7 +37,8 @@ that is the partially applied function with previous x and accepts
 
 (A = Whatever)
 (B = f: (X) => X, in first iteration it is b:B => b)
-(g is instance of B, so it should be f:(X) => X)
+(g is instance of B, so it should be f:(X) => X, that is also explain the weird b=>g(f(b, a)).
+ that also reveals that z is b) //here we are
 (return value of f(A, B) should be B which is f:(X) => X)
 (it also known that return value of (a,g) is a function that accepts b and returns B -- g(f(_:B, a)))
 (the mistery of g)
