@@ -90,3 +90,10 @@ val g_3 = g_2 _
 #val g_5 = g_4 _
 def g1 (a: Int, b: Int => Int): Int => Int =  g_3(b(a))
 #def g2 (a: Int, b: Int => Int): Int => Int =  g_5(b(a))
+def g (a: Int, b: Int => Int): Int => Int = b_to_b
+def ag [A, B](a:A, g:B=>B): B=>B = {
+	g
+}
+
+
+
