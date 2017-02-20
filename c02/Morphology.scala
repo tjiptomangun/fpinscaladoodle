@@ -77,23 +77,26 @@ d(1.5)
 e(1.5)
 
 def someTypeOf2 (a:Int) (b:Double) : String = "A is "+ a + " B is "+b
-val f = someTypeOf2 _
-val g = f.apply(2)
+val _f = someTypeOf2 _
+val g = _f.apply(2)
 
 def B_to_B (a: Int) = a+2
 val b_to_b = B_to_B _
-def f (a: Int, b: Int => Int) = b(a)
+def __f (a: Int, b: Int => Int) = b(a)
 def g_1 (a: Int, b: Int => Int): Int => Int =  b
 def g_2 (a: Int) (b: Int): Int = a + b
 val g_3 = g_2 _
-#def g_4 (a: Int, b: Int): Int = a + b
-#val g_5 = g_4 _
+//def g_4 (a: Int, b: Int): Int = a + b
+//val g_5 = g_4 _
 def g1 (a: Int, b: Int => Int): Int => Int =  g_3(b(a))
-#def g2 (a: Int, b: Int => Int): Int => Int =  g_5(b(a))
-def g (a: Int, b: Int => Int): Int => Int = b_to_b
+//def g2 (a: Int, b: Int => Int): Int => Int =  g_5(b(a))
+//def g (a: Int, b: Int => Int): Int => Int = b_to_b
+def f [A, B] (b: B, a: A): B = b
 def ag [A, B](a:A, g:B=>B): B=>B = {
-	g
+	b => g(f(b, a))
 }
+val restest = ag (3, b_to_b)
+restest (4)
 
 
 
