@@ -172,7 +172,6 @@ object List{
 
 	def foldLeftViaFoldRight [A, B] (l: List[A], z: B) (f: (B, A) => B): B = {
 		foldRight (l,  (b: B) => b) ((a, g) => b => g(f(b, a))) (z)
-		// equals with foldRight (l,  (b: B) => b) ((a, g) => (b => g(f(b, a)))) (z)
 	}
 
 	def reverseWithFoldLeftViaFoldRight[A] (a1: List[A]): List[A] = {
@@ -208,7 +207,26 @@ object List{
 	def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] = {
 		foldRight(as, Nil:List[B]) ((a, acc) => append(f(a) , acc)) 
 	}
-	
+
+	def flatMapFilter[A] (as: List[A]) (f: A=>Boolean): List[A] = {
+		flatMap(as){
+			a =>
+				if (f(a))
+					Cons(a, Nil)
+				else
+					Nil
+		}
+	}
+
+	def listAdder(as: List[Int], bs: List[Int]): List[Int] = {
+		(as, bs) match {
+			case (_, Nil) => Nil
+			case (Nil, _) => Nil
+			case (Cons(a, t1), Cons(b, t2)) => Cons(a+b, listAdder(t1, t2))	
+		}
+			
+	}
+
 
 	
 }
@@ -231,6 +249,8 @@ val k = List.doubleToString(j)
 val l = List.map(j)(_.toString)
 val m = List.filter(j)(_ <1.0)
 val n = List.flatMap(j)(i => List(i, i))
+val n1 = List.flatMap(j)(i => Cons(i, Nil))
 val test = n
+val o = List.flatMapFilter(j)(_ <1.0)
 
 
