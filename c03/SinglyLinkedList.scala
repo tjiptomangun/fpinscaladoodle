@@ -208,8 +208,28 @@ object List{
 		foldRight(as, Nil:List[B]) ((a, acc) => append(f(a) , acc)) 
 	}
 
+	def flatMap1[A, B](as: List[A])(f: A => List[B]): List[B] = {
+		as match {
+			case Nil =>
+				Nil
+			case Cons(a, bs) =>
+				append(f(a), flatMap(bs)(f))
+		}
+	
+	}
+
 	def flatMapFilter[A] (as: List[A]) (f: A=>Boolean): List[A] = {
 		flatMap(as){
+			a =>
+				if (f(a))
+					Cons(a, Nil)
+				else
+					Nil
+		}
+	}
+
+	def flatMap1Filter[A] (as: List[A]) (f: A=>Boolean): List[A] = {
+		flatMap1(as){
 			a =>
 				if (f(a))
 					Cons(a, Nil)
@@ -251,6 +271,7 @@ val m = List.filter(j)(_ <1.0)
 val n = List.flatMap(j)(i => List(i, i))
 val n1 = List.flatMap(j)(i => Cons(i, Nil))
 val test = n
-val o = List.flatMapFilter(j)(_ <1.0)
+val o1 = List.flatMapFilter(j)(_ <1.0)
+val o2 = List.flatMap1Filter(j)(_ <1.0)
 
 
