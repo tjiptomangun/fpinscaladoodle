@@ -170,6 +170,17 @@ object List{
 		foldLeft (a2, Nil: List[A]) ((acc, a) => appendViaFoldLeft(a, acc)) 
 	}
 
+	def concat [A] (as: List[List[A]]): List[A] = {
+		foldRight(as, Nil: List[A])(append (_, _))
+	}
+
+	def concat1 [A] (as: List[List[A]]): List[A] = {
+		as match {
+			case Nil => Nil
+			case Cons(a, bs) => append(a, concat1(bs))
+		}
+	}
+
 	def foldLeftViaFoldRight [A, B] (l: List[A], z: B) (f: (B, A) => B): B = {
 		foldRight (l,  (b: B) => b) ((a, g) => b => g(f(b, a))) (z)
 	}
@@ -255,6 +266,50 @@ object List{
 				Cons (f(a, b), zipWith(t1, t2)(f))
 		}
 	}
+	
+	def take[A](as:List[A], n:Int): List[A] = {
+		n > 0 match {
+			case false =>
+				Nil
+			case _ =>
+				as match {
+					case Nil =>
+						Nil
+					case Cons(a, b) =>
+						Cons(a, take(b, n-1))
+				} 
+		}
+	}
+
+	def takeWhile[A](as:List[A])(f:A=>Boolean): List[A] = { 
+		as match {
+			case Nil =>
+				Nil
+			case Cons(a, b) =>
+				f(a) match {
+					case true =>
+						Cons(a, takeWhile(b)(f))
+					case false =>
+						Nil
+				}
+		} 
+	}
+
+	def forall[A](as:List[A])(f:A=>Boolean): Boolean = {
+		as match {
+			case Nil =>
+				true
+			case Cons(a, b) =>
+				f(a) match {
+					case false =>
+						false
+					case _ =>
+						forall(b)(f)
+				}
+		}
+	}
+
+	
 }
 
 //ex. 3.8
@@ -275,7 +330,7 @@ val k = List.doubleToString(j)
 val l = List.map(j)(_.toString)
 val m = List.filter(j)(_ <1.0)
 val n = List.flatMap(j)(i => List(i, i))
-val n1 = List.flatMap(j)(i => Cons(i, Nil))
+val n1 = List.flatMap(j)(i => Cons(i, Nil:List[Double]))
 val test = n
 val o1 = List.flatMapFilter(j)(_ <1.0)
 val o2 = List.flatMap1Filter(j)(_ <1.0)
@@ -284,7 +339,19 @@ val p1 = List.listAdder(a, b)
 val p2 = List.listAdder(a, c)
 
 val p3 = List.zipWith(a, b) (_ + _)
-val p3 = List.zipWith(a, c) (_ + _)
+val p3 = List.zipWith(a, c) (_ + _) 
+val e1 = List.concat(d)
+val e2 = List.concat1(d)
 
+val q0 = List.take(a, 3)
+val q1 = List.take(a, 7)
+val q2 = List.take(a, 9)
+
+val r0 = List.takeWhile(a)(_ < 3)
+val r1 = List.takeWhile(a)(_  < 7)
+val r2 = List.takeWhile(a)(_ < 9)
+
+val s0 = List.forall(a)(_ > 3)
+val s0 = List.forall(a)(_ > 0)
 
 
