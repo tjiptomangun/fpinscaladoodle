@@ -245,10 +245,16 @@ object List{
 			case (Cons(a, t1), Cons(b, t2)) => Cons(a+b, listAdder(t1, t2))	
 		}
 			
+	} 
+
+	def zipWith[A, B, C](as: List[A], bs: List[B])(f:(A, B)=>C): List[C] ={
+		(as, bs) match {
+			case (_, Nil) => Nil
+			case (Nil, _) => Nil
+			case (Cons (a, t1), Cons(b, t2)) =>
+				Cons (f(a, b), zipWith(t1, t2)(f))
+		}
 	}
-
-
-	
 }
 
 //ex. 3.8
@@ -273,5 +279,12 @@ val n1 = List.flatMap(j)(i => Cons(i, Nil))
 val test = n
 val o1 = List.flatMapFilter(j)(_ <1.0)
 val o2 = List.flatMap1Filter(j)(_ <1.0)
+
+val p1 = List.listAdder(a, b)
+val p2 = List.listAdder(a, c)
+
+val p3 = List.zipWith(a, b) (_ + _)
+val p3 = List.zipWith(a, c) (_ + _)
+
 
 
