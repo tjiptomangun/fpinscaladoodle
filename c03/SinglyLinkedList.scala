@@ -309,6 +309,23 @@ object List{
 		}
 	}
 
+	def exists[A](as:List[A])(f:A=>Boolean): Boolean = {
+		as match {
+			case Nil =>
+				false	
+			case Cons(a, b) =>
+				f(a) match {
+					case true =>
+						true	
+					case _ =>
+						exists(b)(f)
+				}
+		}
+	}
+
+	def hasSubsequence[A] (sup:List[A], sub:List[A]): Boolean = {
+		true	
+	}
 	
 }
 
@@ -353,5 +370,8 @@ val r2 = List.takeWhile(a)(_ < 9)
 
 val s0 = List.forall(a)(_ > 3)
 val s0 = List.forall(a)(_ > 0)
+
+val s0 = List.exists(a)(_ > 3)
+val s0 = List.exists(a)(_ <= 0)
 
 
