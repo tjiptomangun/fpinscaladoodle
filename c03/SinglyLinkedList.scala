@@ -324,7 +324,26 @@ object List{
 	}
 
 	def hasSubsequence[A] (sup:List[A], sub:List[A]): Boolean = {
-		true	
+		
+		def inHasSubsequence(inSup:List[A], inSub:List[A]): Boolean = {
+			(inSup, inSub) match {
+				case (Cons(a, atail), Cons(b, btail)) =>
+					a == b match {
+						case true =>
+							inHasSubsequence(atail, btail)
+						case _ =>
+							hasSubsequence(atail, sub)
+					}
+				case (Nil, Nil) =>
+					true
+				case (Cons(a, atail), Nil) =>
+					true
+				case _ =>
+					false
+				
+			}
+		}
+		inHasSubsequence(sup, sub)
 	}
 	
 }
@@ -373,5 +392,18 @@ val s0 = List.forall(a)(_ > 0)
 
 val s0 = List.exists(a)(_ > 3)
 val s0 = List.exists(a)(_ <= 0)
+
+val sup = List(1, 2, 3, 4, 5, 6, 7)
+val sub1 = List(1, 11)
+val sub2 = List(3,4,5)
+val sub3 = List (1, 4, 7)
+val sub4 = Nil
+
+List.hasSubsequence(sup, sub1)
+List.hasSubsequence(sup, sub2)
+List.hasSubsequence(sup, sub3)
+List.hasSubsequence(sup, sub4)
+List.hasSubsequence(Nil, sub4)
+List.hasSubsequence(Nil, sub2)
 
 
