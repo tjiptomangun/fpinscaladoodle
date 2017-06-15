@@ -84,17 +84,9 @@ def mean(xs: Seq[Double]): Option[Double] = {
 }
 
 def variance(xs: Seq[Double]): Option[Double] = {
-	val mean_ = mean(xs)
-	xs.flatMap{ x=>
-		mean_ match {
-			case None =>
-				None
-			case Some(m) =>
-				Some(math.pow(x - m), 2)
-		}
-	}
+	mean(xs) flatMap (m => mean(xs.map(x => Math.pow(x-m, 2))))
 }
 
 val lDouble = List(1.1, 0.0, 3.5, 2.2, 4.1, 7.1, 9,2)
-
+val m = mean (lDouble)
 val v = variance(lDouble)
