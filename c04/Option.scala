@@ -75,3 +75,26 @@ val a6:Option[Double] = a2.orElse(Some(0.0))
 val a7:Option[Int] = a3.orElse(Some(0))
 val a8 = a2.filter(_ < 4.0)
 val a9 = a2.filter(_ > 4.0)
+
+def mean(xs: Seq[Double]): Option[Double] = {
+	if (xs.isEmpty)
+		None
+	else
+		Some(xs.sum/xs.length)
+}
+
+def variance(xs: Seq[Double]): Option[Double] = {
+	val mean_ = mean(xs)
+	xs.flatMap{ x=>
+		mean_ match {
+			case None =>
+				None
+			case Some(m) =>
+				Some(math.pow(x - m), 2)
+		}
+	}
+}
+
+val lDouble = List(1.1, 0.0, 3.5, 2.2, 4.1, 7.1, 9,2)
+
+val v = variance(lDouble)
