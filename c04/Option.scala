@@ -35,7 +35,7 @@ sealed trait Option[+A]{
 			case None =>
 				ob
 			case _ =>
-				this	
+				this
 		}
 	}
 
@@ -111,7 +111,7 @@ def Try[A](a: => A): Option[A] =
 	catch {case e: Exception => None}
 
 
-def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = {
+def map2Old[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = {
 	(a, b) match {
 		case (Some(x), Some(y)) =>
 			Some(f(x, y))
@@ -120,13 +120,41 @@ def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = {
 	}
 }
 
+def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = {
+	a flatMap (x => b flatMap (y => Some(f(x, y))))
+}
+
 def parseInsuranceRateQuote (age: String, numberOfSpeedingTickets: String) = {
 	val optAge: Option[Int] = Try(age.toInt)
 	val optTickets : Option[Int] = Try(numberOfSpeedingTickets.toInt)
 	map2(optAge, optTickets)(insuranceRateQuote)
+} 
+
+parseInsuranceRateQuote("100", "3y")
+parseInsuranceRateQuote("100", "3")
+parseInsuranceRateQuote("100x", "3")
+parseInsuranceRateQuote("100x", "3y")
+
+def sequence[A](a: List[Option[A]]): Option[List[A]] = {
+	a.foldRight(Some(Nil): Option[List[A]]) {
+		(x: Option[A], y:Option[List[A]]) => 
+			y flatMap {_y => x flatMap { 
+				_x => Some(_x :: _y)
+			}
+		}
+	}
+}
+
+def sequence_rec[A](a: List[Option[A]]): Option[List[A]] = {
+	a match {
+		case (Some(x) :: y) =>
+		case Nil => Nil
+		case _ =>
+	}	
 }
 
 
-val inv = parseInsuranceRateQuote("100", "3y")
-val vld = parseInsuranceRateQuote("100", "3")
-
+val c = List(Some(1), Some(2), Some(3), Some(4))
+val d:List[Option[Int]] = List(Some(1), None, Some(3), Some(4))
+sequence(c)
+sequence(d)
