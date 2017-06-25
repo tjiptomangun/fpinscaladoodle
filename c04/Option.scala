@@ -1,6 +1,7 @@
 //{echo ":paste" & cat Option.scala & echo ":q";}| scala
 
 import scala.{Option => _, Either => _, _}
+import scala.annotation.tailrec
 case object None extends Option[Nothing]
 case class Some[+A](get:A) extends Option[A]
 
@@ -145,11 +146,14 @@ def sequence[A](a: List[Option[A]]): Option[List[A]] = {
 	}
 }
 
+@tailrec
 def sequence_rec[A](a: List[Option[A]]): Option[List[A]] = {
 	a match {
+		case (None :: y) =>
+			None
+		case Nil => Some(Nil)
 		case (Some(x) :: y) =>
-		case Nil => Nil
-		case _ =>
+			sequence_rec(y).flatMap(_y => Some(x :: _y))
 	}	
 }
 
@@ -157,4 +161,7 @@ def sequence_rec[A](a: List[Option[A]]): Option[List[A]] = {
 val c = List(Some(1), Some(2), Some(3), Some(4))
 val d:List[Option[Int]] = List(Some(1), None, Some(3), Some(4))
 sequence(c)
+sequence(d)
+sequence_rec(c)
+sequence_rec(d)
 sequence(d)
