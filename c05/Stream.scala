@@ -23,7 +23,7 @@ sealed trait Stream[+A] {
 			if (n > 0){
 				str match {
 					case Cons(a, b) =>
-						Stream.cons(a, () => inner(b(), n - 1))
+						Stream.cons(a(), inner(b(), n - 1))
 	
 					case _ =>
 						Stream.empty[A]
@@ -42,10 +42,16 @@ case object Empty extends Stream[Nothing]
 case class Cons[+A] (h: () => A, t: () => Stream[A]) extends Stream[A]
 
 object Stream {
-	def cons[A](hd: ()  => A, tl: ()  => Stream[A]): Stream[A] = {
+	def cons[A](hd: => A, tl: => Stream[A]): Stream[A] = {
 		lazy val head = hd;
 		lazy val tail = tl;
-		Cons(head, tail) 
+		Cons(() => head, () => tail) 
+	}
+
+	def cons2[A](hd: => A, tl: => Stream[A]): Stream[A] = {
+		val head = hd;
+		val tail = tl;
+		Cons(() => head, () => tail) 
 	}
 	
 	def empty[A]: Stream[A] = Empty
@@ -55,7 +61,7 @@ object Stream {
 
 }
 
-val d = List(1, 3, 5, 6, 2, 4, 11, 32, 12, 7)
+val d = List({println ("zee"); 1}, {println ("wee"); 3}, 5, 6, 2, 4, 11, 32, 12, 7)
 val r0 = Stream(d:_*)
 val r1 = r0.toList
 
@@ -63,7 +69,6 @@ val c = Cons(()=>{println("Hello"); 1}, ()=>Stream.empty)
 c.headOption
 c.headOption
 
-//val e = Stream.cons(()=>{println("Hello"); 1}, Stream.empty)
-//e.headOption
-//e.headOption
+val e = Stream.cons({Thread.sleep(3000); 1}, Stream.empty)
 
+//val f = Stream.cons2({Thread.sleep(3000); 1}, Stream.empty)
