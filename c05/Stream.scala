@@ -131,6 +131,30 @@ sealed trait Stream[+A] {
 				Stream.empty
 		}
 	}
+
+	def existsLong(p: A => Boolean): Boolean = this match{
+		case Cons(h, t) => p(h()) || t().exists(p)
+		case _ => false
+	}
+
+	def foldRight[B](z: => B)(f: (A, =>B) => B): B = {
+		this match {
+			case Cons(h, t) => 
+				f(h(), t().foldRight(z)(f))
+			case _ =>
+				z
+		}
+	}
+
+	def exists(p: A => Boolean): Boolean = {
+		foldRight(false)((a, b) => p(a) || b )
+	}
+
+	def forAll(p: A => Boolean): Boolean = {
+		foldRight(true)((a, b) => p(a) && b)
+	}
+
+	
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A] (h: () => A, t: () => Stream[A]) extends Stream[A]
@@ -179,5 +203,7 @@ val g1 = Stream(g0:_*)
 val g2 = g1.toList
 val g3 = g1.take(2).toList
 val g4 = g1.drop(2).toList
-val g5 = g1.takeWhile (_ >= 5)
-
+val g5 = g1.takeWhile (_ < 5)
+val g6 = g1.exists(_ < 3)
+val g7 = g1.exists(_ < 0)
+val g8 = g1.forAll(_ > 0)
