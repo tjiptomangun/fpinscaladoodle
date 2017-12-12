@@ -72,13 +72,13 @@ val t07 = zNotTwice(true, () => {println("hi"); 1 + 35})
 val t08 = zNotTwice(false, () => {println("hi"); 1 + 36})
 
 def cccc(f: => Int) = {f}
-def dddd(f:()  => Int) = {1}
+def dddd(f:()  => Int) = {1} //res0 = 1
 def eeee(f:()  => Int):Int = {f()}
-cccc(4)
+cccc(4) // res0 = 4
 dddd(()=>2)
-cccc(Math.pow(Math.pow(3, 2.5), 2.545).toInt)
-dddd(() => Math.pow(Math.pow(3, 2.5), 2.545).toInt)
-eeee(() => Math.pow(Math.pow(3, 2.5), 2.545).toInt)
+cccc(Math.pow(Math.pow(3, 2.5), 2.545).toInt) //res0 = 1085
+dddd(() => Math.pow(Math.pow(3, 2.5), 2.545).toInt) //res0 = 1
+eeee(() => Math.pow(Math.pow(3, 2.5), 2.545).toInt) //res0 = 1085
 
 /* 
  * Notes

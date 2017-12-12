@@ -154,6 +154,68 @@ sealed trait Stream[+A] {
 		foldRight(true)((a, b) => p(a) && b)
 	}
 
+	def takeWhileVFR (p: A => Boolean): Stream [A] = {
+		foldRight(Stream.empty: Stream[A]){(a, b) => 
+			if (p(a)){
+				Cons(() => a, () => b)
+			}
+			else {
+				Stream.empty
+			}
+		}
+	}
+
+	def headOptionViaFoldRight(): Option[A] = {
+		foldRight(None: Option[A]){
+			(a, b) =>
+				Some(a)
+				
+		}
+	}
+
+	def map[B](j: A => B): Stream [B] = {
+		foldRight(empty: Stream[B]) {
+			(a, b) =>
+				cons(j(a), b)
+		}
+	}
+
+	def filter(j: A => Boolean): Stream[A] = {
+
+		foldRight(empty: Stream[A]){
+			(a, b) =>
+				if (j(a))
+					cons(a, b)
+				else
+					b
+		}
+	}
+
+	def append[ B >: A](j: => Stream[B]) : Stream [B] = {
+		foldRight(j){
+			(a, b) =>
+				cons(a, b)
+		}
+	}
+
+	def append2[B >: A](j: => Stream[B]): Stream [A] = {
+		val x:List[A] = j.toList.map(_.asInstanceOf[A])
+		val k = apply(x:_*)
+		foldRight(k){
+			(a, b) =>
+				cons(a, b)
+		}
+	} 
+
+	def flatMap [B](f: A => Stream[B]): Stream[B] = {
+		foldRight(empty[B]) {
+			(a, b) =>
+				f(a).append(b)
+		}
+	}
+
+	def find (f: A => Boolean): Option[A] =
+		filter(f).headOption
 	
 }
 case object Empty extends Stream[Nothing]
@@ -175,6 +237,37 @@ object Stream {
 	def apply[A] (as: A*): Stream[A] =
 		if (as.isEmpty) empty else cons(as.head, apply(as.tail: _*))
 		//if (as.isEmpty) empty else cons2(as.head, apply(as.tail: _*))
+
+	def constant[A](a: A): Stream[A] = {
+		cons(a, constant(a)) 
+	}
+
+	def from(n: Int): Stream[Int] = {
+		Stream.cons(n, from(n + 1))
+	}
+
+	def fibs(): Stream[Int] = {
+		def _fibs(x: Int, y: Int): Stream[Int] = {
+			cons(y, _fibs(y, x + y))
+		}
+		cons(0, _fibs(0, 1))
+	}
+
+	def fact(): Stream[Int] = {
+		def _fact(x: Int, y: Int): Stream[Int] = {
+			cons(y, _fact(y, ((y/x)+1)*y))
+		}
+		cons(1, cons(1, _fact(1, 2)))
+	}
+
+	def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream [A] = {
+		f(z) match {
+			case None =>
+				Stream.empty
+			case Some(x) =>
+				cons(x._1, unfold(x._2)(f))
+		}
+	}
 
 }
 
@@ -207,3 +300,15 @@ val g5 = g1.takeWhile (_ < 5)
 val g6 = g1.exists(_ < 3)
 val g7 = g1.exists(_ < 0)
 val g8 = g1.forAll(_ > 0)
+val g9 = g1.takeWhileVFR(_ < 5)
+val gA = g1.map(_ + 4).toList //gA = List(5, 6, 7, 8, 9, 10)
+val gB = g1.map(_ + 4).filter(_ > 7).toList //List[Int] = List(8, 9, 10)
+val gC = g1.append(g1)
+val gD = g1.append2(g1)
+val gE = g1.flatMap((x: Int) => Stream.cons(x+0.1, Stream.empty:Stream[Double])).toList
+val gF:Stream[Int] = g1.append(Stream.cons(40,Stream.cons(20, Stream.cons(30,Stream.empty:Stream[Int]))))
+
+val ones : Stream[Int] = Stream.cons(1, ones)
+
+val gH = Stream.constant("Hello").take(10).drop(5)
+
