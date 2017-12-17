@@ -91,7 +91,7 @@ sealed trait Stream[+A] {
 		this match {
 			case Cons(h, t) =>
 				if (k > 0)
-					drop(k - 1) 
+					t().drop(k - 1) 
 				else 
 					this
 				
@@ -216,7 +216,48 @@ sealed trait Stream[+A] {
 
 	def find (f: A => Boolean): Option[A] =
 		filter(f).headOption
+
+	def mapViaUnfold[B](j: A => B): Stream[B] = {
+		unfold(this) {
+			case Cons(h, t) => 
+				Some((j(h()), t()))
+
+			case empty: Stream[A] =>
+				None
+
+		}
+	}
+
+	def takeViaUnfold(n: Int): Stream[A] = {
+		unfold(this) {
+			case Cons(h, t) if n > 0 =>
+				Some(h(), t().takeViaUnfold(n - 1))
+			case _ =>
+				None 
+		}
+	}
+
+	def takeWhileViaUnfold(j: A => Boolean) : Stream[A] = {
+		unfold(this) {
+			case Cons(h, t) if j(h()) =>
+				Some(h(), t().takeWhileViaUnfold(j))
+			case _ =>
+				None		
+		}
+	}
+
+	def zipWith[B, C](bs: Stream[B])(f:(A, B) => C) : Stream [C] = {
+		unfold(this, bs) { 
+			case (Cons(h1, t1), Cons(h2, t2)) =>
+				Some((f(h1(), h2()), (t1(),t2())))
 	
+			case _ =>
+				None 
+		}
+	}
+
+	def zipAll[B](bs: Stream[B]): Stream[(Option[A], Option[B])] = {
+	}
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A] (h: () => A, t: () => Stream[A]) extends Stream[A]
@@ -241,6 +282,8 @@ object Stream {
 	def constant[A](a: A): Stream[A] = {
 		cons(a, constant(a)) 
 	}
+
+	val ones : Stream[Int] = Stream.cons(1, ones)
 
 	def from(n: Int): Stream[Int] = {
 		Stream.cons(n, from(n + 1))
@@ -268,6 +311,42 @@ object Stream {
 				cons(x._1, unfold(x._2)(f))
 		}
 	}
+
+	def fibsViaUnfold(): Stream [Int]  = {
+		unfold((0, 1)){
+			(x:(Int, Int)) =>
+				Some((x._1), (x._2, x._1 + x._2))
+				
+		}
+	}
+
+	def fromViaUnfold(n: Int): Stream[Int] = {
+		unfold(n){
+			(x: Int) =>
+				x match {
+					case y if y < 0 =>
+						None
+					case z =>
+						Some((z, z+1))
+				}	
+		}
+	}
+
+	def constantViaUnfold[A](a: A) : Stream[A] = {
+		unfold(a){
+			(x: A) =>	
+				Some((x, x))
+		}
+	} 
+
+	def onesViaUnfold(): Stream[Int] = {
+		unfold(1) {
+			(x: Int) =>
+				Some((x, x))
+		}
+	}
+
+	
 
 }
 
@@ -308,7 +387,8 @@ val gD = g1.append2(g1)
 val gE = g1.flatMap((x: Int) => Stream.cons(x+0.1, Stream.empty:Stream[Double])).toList
 val gF:Stream[Int] = g1.append(Stream.cons(40,Stream.cons(20, Stream.cons(30,Stream.empty:Stream[Int]))))
 
-val ones : Stream[Int] = Stream.cons(1, ones)
 
 val gH = Stream.constant("Hello").take(10).drop(5)
+val gI = g1.mapViaUnfold(_ + 4).toList
+val gJ = g1.takeViaUnfold(4).toList
 
