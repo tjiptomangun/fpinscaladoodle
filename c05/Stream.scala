@@ -257,6 +257,25 @@ sealed trait Stream[+A] {
 	}
 
 	def zipAll[B](bs: Stream[B]): Stream[(Option[A], Option[B])] = {
+		unfold(this, bs) {
+			case (Cons(h1, t1), Cons(h2, t2)) =>
+				Some((Some((h1())), Some(h2())), (t1(),t2()))
+
+			case (Cons(h1, t1), _) =>
+				Some((Some(h1()), None:Option[B]), (t1(), empty))
+
+			case (_, Cons(h2, t2)) =>
+				Some((None:Option[A], Some(h2())), (empty, t2()))
+
+			case _ =>
+				None
+			
+			
+		}
+	}
+
+	def hasSubsequence (bs: Stream[B]): Boolean = {
+		
 	}
 }
 case object Empty extends Stream[Nothing]
@@ -391,4 +410,8 @@ val gF:Stream[Int] = g1.append(Stream.cons(40,Stream.cons(20, Stream.cons(30,Str
 val gH = Stream.constant("Hello").take(10).drop(5)
 val gI = g1.mapViaUnfold(_ + 4).toList
 val gJ = g1.takeViaUnfold(4).toList
+val gK = g1.map(_ + 4).take(4)
+val gL = g1.zipWith(gK)((x, y) => x - 5)
+val gM = g1.zipAll(gK)
+
 
