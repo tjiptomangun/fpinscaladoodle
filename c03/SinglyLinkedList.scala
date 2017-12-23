@@ -83,6 +83,8 @@ object List{
 				Nil 
 			case Cons(h, t) =>
 				append(Cons(h, Nil), init(t)) 
+			case _ =>
+				Nil
 		}	
 	}
 
@@ -345,7 +347,36 @@ object List{
 		}
 		inHasSubsequence(sup, sub)
 	}
-	
+
+	@tailrec
+	def startsWith [A] (sup: List[A], sub: List[A]) : Boolean  = {
+		(sup, sub) match {
+			case (Cons(h1, t1), Nil) =>
+				true
+			case (Cons(h1, t1), Cons(h2, t2)) if h1 == h2 =>
+				startsWith(t1, t2)
+			case (Nil, Nil) =>
+				true
+			case _ =>
+				false
+
+				
+		}
+	}
+
+	@tailrec
+	def hasSubsequenceViaStartsWith[A] (sup: List[A], sub: List[A]): Boolean = {
+		if (startsWith(sup, sub))
+			true
+		else {
+			(sup, sub) match {
+				case (Nil, Cons(h1, t1)) =>
+					false
+				case (Cons(h1, t1), _) =>
+					hasSubsequenceViaStartsWith(t1, sub)
+			}
+		}	
+	} 
 }
 
 //ex. 3.8
@@ -375,7 +406,7 @@ val p1 = List.listAdder(a, b)
 val p2 = List.listAdder(a, c)
 
 val p3 = List.zipWith(a, b) (_ + _)
-val p3 = List.zipWith(a, c) (_ + _) 
+val p4 = List.zipWith(a, c) (_ + _) 
 val e1 = List.concat(d)
 val e2 = List.concat1(d)
 
@@ -388,10 +419,10 @@ val r1 = List.takeWhile(a)(_  < 7)
 val r2 = List.takeWhile(a)(_ < 9)
 
 val s0 = List.forall(a)(_ > 3)
-val s0 = List.forall(a)(_ > 0)
+val s1 = List.forall(a)(_ > 0)
 
-val s0 = List.exists(a)(_ > 3)
-val s0 = List.exists(a)(_ <= 0)
+val s2 = List.exists(a)(_ > 3)
+val s3 = List.exists(a)(_ <= 0)
 
 val sup = List(1, 2, 3, 4, 5, 6, 7)
 val sub1 = List(1, 11)
@@ -406,4 +437,15 @@ List.hasSubsequence(sup, sub4)
 List.hasSubsequence(Nil, sub4)
 List.hasSubsequence(Nil, sub2)
 
+val r4 = List.startsWith(sup, List(1, 2, 3))
 
+val r5 = List.startsWith(sup, List(2, 2, 3))
+
+val r6 = List.startsWith(Nil, List(2, 2, 3))
+
+val r7 = List.hasSubsequenceViaStartsWith(sup, sub1)
+val r8 = List.hasSubsequenceViaStartsWith(sup, sub2)
+val r9 = List.hasSubsequenceViaStartsWith(sup, sub3)
+val rA = List.hasSubsequenceViaStartsWith(sup, sub4)
+val rB = List.hasSubsequenceViaStartsWith(Nil, sub4)
+val rC = List.hasSubsequenceViaStartsWith(Nil, sub2)
