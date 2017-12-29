@@ -351,16 +351,12 @@ object List{
 	@tailrec
 	def startsWith [A] (sup: List[A], sub: List[A]) : Boolean  = {
 		(sup, sub) match {
-			case (Cons(h1, t1), Nil) =>
+			case (_, Nil) =>
 				true
 			case (Cons(h1, t1), Cons(h2, t2)) if h1 == h2 =>
 				startsWith(t1, t2)
-			case (Nil, Nil) =>
-				true
 			case _ =>
-				false
-
-				
+				false 
 		}
 	}
 

@@ -120,13 +120,8 @@ sealed trait Stream[+A] {
 
 	def takeWhile(p: A => Boolean): Stream[A] = {
 		this match {
-			case Cons(h, t) =>
-				p(h()) match {
-					case true =>
-						cons(h(), t().takeWhile(p))
-					case _ =>
-						Stream.empty
-				}
+			case Cons(h, t) if (p(h())) =>
+				cons(h(), t().takeWhile(p))
 			case _ =>
 				Stream.empty
 		}
@@ -268,14 +263,42 @@ sealed trait Stream[+A] {
 				Some((None:Option[A], Some(h2())), (empty, t2()))
 
 			case _ =>
-				None
-			
+				None 
 			
 		}
 	}
 
-	def hasSubsequence (bs: Stream[B]): Boolean = {
-		
+	def startsWith [B](bs: Stream[B]): Boolean = {
+		zipAll(bs).takeWhile(!_._2.isEmpty) forAll(y => y._1 == y._2)
+	}
+
+	def tails : Stream[Stream[A]] = {
+		unfold(this) {
+			case x@Cons(h1, t1) =>
+				Some((x, t1()))
+			case y@Empty =>
+				Some((y, null))
+			case _ =>
+				None
+		}
+	}
+
+	def hasSubsequence [B](bs: Stream[B]): Boolean = {
+		tails exists (_ startsWith bs)
+	}
+
+	def scanRight[B](initVal: => B)(f: (A, =>B) => B): Stream[B] = {
+		//tails map (x => x.foldRight(initVal)(f))
+		val j = tails
+		unfold (j.headOption){
+			case Some(x@Cons(h1, t1)) =>
+				Some(x foldRight (initVal)(f), Some(t1()))
+			case None =>
+				Some(initVal, null)
+			case _ =>
+				None
+		}
+
 	}
 }
 case object Empty extends Stream[Nothing]
@@ -363,9 +386,7 @@ object Stream {
 			(x: Int) =>
 				Some((x, x))
 		}
-	}
-
-	
+	} 
 
 }
 
@@ -413,5 +434,13 @@ val gJ = g1.takeViaUnfold(4).toList
 val gK = g1.map(_ + 4).take(4)
 val gL = g1.zipWith(gK)((x, y) => x - 5)
 val gM = g1.zipAll(gK)
+val gN = g1.take(2)
+val gO = g1.take(4).drop(1)
+
+val r001 = g1.startsWith(gN)
+val r002 = g1.startsWith(gO)
+val r003 = g1.hasSubsequence(gO) //true
+val r004 = gO.hasSubsequence(gN) //false
+val r005 = g1.scanRight(0)(_ + _)
 
 
