@@ -55,6 +55,16 @@ def xmayBeTwice(b: Boolean, i: (Int) => Int):Int = {
 val t03 = xmayBeTwice(true, (x: Int) => {println("hi"); 1 + 31})
 val t04 = xmayBeTwice(false,(x: Int) => {println("hi"); 1 + 32})
 
+def ymayBeTwice(b: Boolean, i:  Int):Int = {
+	if (b)
+		i + i
+	else
+		i - 2
+}
+
+val t0A = ymayBeTwice(true, {println("hi"); 1 + 31}) //print once
+val t0B = ymayBeTwice(true, {println("hi"); 1 + 29}) //print once
+
 def yNotTwice(b: Boolean, i: => Int) = {
 	lazy val j = i
 	if (b) j + j  else 0

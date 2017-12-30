@@ -288,16 +288,16 @@ sealed trait Stream[+A] {
 	}
 
 	def scanRight[B](initVal: => B)(f: (A, =>B) => B): Stream[B] = {
-		//tails map (x => x.foldRight(initVal)(f))
-		val j = tails
-		unfold (j.headOption){
-			case Some(x@Cons(h1, t1)) =>
-				Some(x foldRight (initVal)(f), Some(t1()))
-			case None =>
-				Some(initVal, null)
-			case _ =>
-				None
-		}
+		tails map (x => x.foldRight(initVal)(f))
+//		val j = tails
+//		unfold (j.headOption){
+//			case Some(x@Cons(h1, t1)) =>
+//				Some(x foldRight (initVal)(f), Some(t1()))
+//			case None =>
+//				Some(initVal, null)
+//			case _ =>
+//				None
+//		}
 
 	}
 }
@@ -305,6 +305,64 @@ case object Empty extends Stream[Nothing]
 case class Cons[+A] (h: () => A, t: () => Stream[A]) extends Stream[A]
 
 object Stream {
+	/**
+	 * Notes :
+	 * If the evaluation of an expression runs forever or throws an error 
+	 * instead of returning a definite value, we say that the expression 
+	 * doesn’t terminate, or that it evaluates to bottom. A function f is 
+	 * strict if the expression f(x) evaluates to bottom for all x that 
+	 * evaluate to bottom.
+ 	 * As a final bit of terminology, we say that a non-strict function 
+	 * in Scala takes its arguments by name rather than by value.
+
+ 	 * "Evaluates to bottom" is a way to say that an expression doesn't return 
+	 * normally: it throws an exception, gets stuck in a loop, or halts the 
+	 * program. The reason that phrase is used is because sometimes it's 
+	 * convenient to pretend that all expressions evaluate to a value. Once 
+	 * you pretend that non-returning expressions produce a value called bottom 
+	 * you can simplify your description of how expressions interact.
+	 * These uses of the word "bottom" come originally from formal logic and 
+	 * then into programming via formal language semantics.
+	 * https://stackoverflow.com/questions/25872075/how-to-understand-the-sentence-or-that-it-evaluates-to-bottom
+
+	 * A function f is said to be strict if, when applied to a non-terminating 
+	 * expression, it also fails to terminate.
+	 * The entity ⊥ , called bottom, denotes an expression which does not return 
+	 * a normal value, either because it loops endlessly or because it aborts 
+	 * due to an error such as division by zero. A function which is not strict 
+	 * is called non-strict. A strict programming language is one in which 
+	 * user-defined functions are always strict.
+	 * Intuitively, non-strict functions correspond to control structures. 
+	 * Operationally, a strict function is one which always evaluates its argument; 
+	 * a non-strict function is one which may not evaluate some of its arguments. 
+	 * Functions having more than one parameter may be strict or non-strict 
+	 * in each parameter independently, as well as jointly strict in several 
+	 * parameters simultaneously.  
+	 * https://en.wikipedia.org/wiki/Strict_function
+
+	 * By-name parameters are only evaluated when used.
+	 * By-name parameters have the advantage that they are not evaluated 
+	 *   if they aren’t used in the function body.
+	 * On the other hand, by-value parameters have the advantage that 
+	 *   they are evaluated only once.
+	 * ref https://docs.scala-lang.org/tour/by-name-parameters.html
+	 *
+	 * A parameter of type A acts like a val (its body is evaluated once, 
+	 *   when bound) 
+	 * and 
+	 * one of type => A acts like a def (its body is evaluated whenever it is used).
+	 * 
+	 * see cons and cons2 demo below 
+	 * cons headOption will evaluate hd once,
+	 * cons2 headOption will evaluate hd on each call.
+	 * This is the evidence that hd is evaluated once its value is requested.
+	 * Not when cons is called since it is by name parameter, not when 
+	 * hd assigned to hd since it is lazy, not even when Cons is called since 
+	 * this is also by name parameter.
+	 * But when head is evaluated in which hd head need its value in which
+	 * hd need to have its value evaluated.
+	 *
+	 */
 	def cons[A](hd: => A, tl: => Stream[A]): Stream[A] = {
 		lazy val head = hd;
 		lazy val tail = tl;
@@ -405,8 +463,11 @@ val c = Cons(()=>{println("Hello"); 1}, ()=>Stream.empty)
 c.headOption
 c.headOption
 
-val e = Stream.cons({println("goodbye cons!"); Thread.sleep(3000); 1}, Stream.empty)
-val f = Stream.cons2({println("goodbye cons2!"); Thread.sleep(3000); 1}, Stream.empty)
+val e = Stream.cons({println("goodbye cons!"); Thread.sleep(5000); 1}, Stream.empty)
+val f = Stream.cons2({println("goodbye cons2!"); Thread.sleep(5000); 1}, Stream.empty)
+
+//e headOption will only print and sleep once
+//f headOption will print and sleep on each call
 
 //val f = Stream.cons2({Thread.sleep(3000); 1}, Stream.empty)
 
