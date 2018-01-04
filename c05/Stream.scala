@@ -132,6 +132,9 @@ sealed trait Stream[+A] {
 		case _ => false
 	}
 
+	// The arrow `=>` in front of the argument type `B` means that 
+	// the function `f` takes its second argument by name and may 
+	// not choose to evaluate it. 
 	def foldRight[B](z: => B)(f: (A, =>B) => B): B = {
 		this match {
 			case Cons(h, t) => 
@@ -287,17 +290,16 @@ sealed trait Stream[+A] {
 		tails exists (_ startsWith bs)
 	}
 
+	// todo
+	// prove your impl using fibs
+	// Stream.fibs.scanRight ..... 
 	def scanRight[B](initVal: => B)(f: (A, =>B) => B): Stream[B] = {
-		tails map (x => x.foldRight(initVal)(f))
-//		val j = tails
-//		unfold (j.headOption){
-//			case Some(x@Cons(h1, t1)) =>
-//				Some(x foldRight (initVal)(f), Some(t1()))
-//			case None =>
-//				Some(initVal, null)
-//			case _ =>
-//				None
-//		}
+		this match {
+			case Cons(h, t) =>
+				cons(this.foldRight(initVal)(f), t().scanRight(initVal)(f))
+			case _ =>
+				cons(initVal, Empty)
+		}
 
 	}
 }
@@ -314,6 +316,12 @@ object Stream {
 	 * evaluate to bottom.
  	 * As a final bit of terminology, we say that a non-strict function 
 	 * in Scala takes its arguments by name rather than by value.
+	 *
+	 * Unevaluated form of an expression is call thunk.
+	 * We force the thunk to evaluate and get result. We do so by invoking
+	 * the function.
+	 *
+	 * refence Functional Programming in Scala Ch.05
 
  	 * "Evaluates to bottom" is a way to say that an expression doesn't return 
 	 * normally: it throws an exception, gets stuck in a loop, or halts the 
@@ -463,11 +471,12 @@ val c = Cons(()=>{println("Hello"); 1}, ()=>Stream.empty)
 c.headOption
 c.headOption
 
-val e = Stream.cons({println("goodbye cons!"); Thread.sleep(5000); 1}, Stream.empty)
+val e = Stream.cons({println("goodbye cons!"); Thread.sleep(5000); 1}, Stream.empty) 
+	
 val f = Stream.cons2({println("goodbye cons2!"); Thread.sleep(5000); 1}, Stream.empty)
 
-//e headOption will only print and sleep once
-//f headOption will print and sleep on each call
+e.headOption //will only print and sleep once
+f.headOption //will print and sleep on each call
 
 //val f = Stream.cons2({Thread.sleep(3000); 1}, Stream.empty)
 
