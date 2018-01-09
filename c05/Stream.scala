@@ -293,14 +293,28 @@ sealed trait Stream[+A] {
 	// todo
 	// prove your impl using fibs
 	// Stream.fibs.scanRight ..... 
-	def scanRight[B](initVal: => B)(f: (A, =>B) => B): Stream[B] = {
+	// find the most effective way
+	// check answer/answer key
+	def scanRightWrong[B](initVal: => B)(f: (A, =>B) => B): Stream[B] = {
 		this match {
 			case Cons(h, t) =>
 				cons(this.foldRight(initVal)(f), t().scanRight(initVal)(f))
 			case _ =>
 				cons(initVal, Empty)
-		}
+		} 
+	}
 
+	def scanRight[B](initVal: => B)(f: (A, =>B) => B): Stream[B] = {
+		foldRight((initVal, Stream(initVal))) {
+			(a, passed) =>
+				// this lazy val prevent reevaluation
+				// why is this necessary ?
+				// because passed already calculated in
+				// previous iteration and cons-ed (stream-ed)
+				lazy val tmp = passed
+				val b = f(a, tmp._1)
+				(b, cons(b, tmp._2))
+		}._2
 	}
 }
 case object Empty extends Stream[Nothing]
