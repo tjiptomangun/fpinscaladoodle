@@ -68,10 +68,18 @@ object RNG {
 		
 	}
 
-	@annotation.tailrec
 	def intsTailRec(count: Int)(curr: RNG): (List[Int], RNG) = {
-		if (count == 0)
-			List.empty, x
+		@annotation.tailrec
+		def inner (a: Int, c: RNG, l: List[Int]) : (List[Int], RNG) = {
+			if (a == 0)
+				(l, c)
+			else{
+				val x0 = c.nextInt
+				inner(a-1, x0._2, x0._1 :: l)
+			}
+				
+		}
+		inner(count, curr, List.empty)
 	}
 }
 
@@ -94,4 +102,6 @@ val (r013, rng013) = RNG.intsMe(5)(rng012)
 val (r014, rng014) = RNG.intsMe(5)(rng013)
 val (r015, rng015) = RNG.ints(5)(rng014)
 val (r016, rng016) = RNG.ints(5)(rng015)
+val (r017, rng017) = RNG.intsTailRec(5)(rng016)
+val (r018, rng018) = RNG.intsTailRec(5)(rng017)
 
