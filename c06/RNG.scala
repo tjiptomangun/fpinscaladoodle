@@ -1,11 +1,17 @@
 trait RNG {
 	def nextInt: (Int, RNG) 
-	
 }
 
 
 object RNG {
+	/**
+	 * implementation of RNG trait
+	 **/
 	case class SimpleRNG(seed: Long) extends RNG{
+		/**
+		 * returns tuple2 of integer and new instance of this class
+		 * with a new seed
+		 **/
 		def nextInt: (Int, RNG) = {
 			val newSeed = (seed * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL
 			val nextRNG = SimpleRNG(newSeed)
@@ -26,7 +32,7 @@ object RNG {
 	}
 
 	def intDouble(curr: RNG): ((Int, Double), RNG) = {
-		val (i, rP) = nonNegativeInt(curr)
+		val (i, rP) = curr.nextInt
 		val (d, rN) = double(rP)
 		((i, d), rN)
 	}
@@ -81,9 +87,90 @@ object RNG {
 		}
 		inner(count, curr, List.empty)
 	}
+	type Rand[+A] = RNG => (A, RNG)
+
+	val int: Rand[Int] = _.nextInt
+
+	def unit[A](a: A): Rand[A] = 
+		rng => (a, rng)
+
+	//try to implement this, see nonNegative above
+	def nonNegative2: Rand[Int] = {
+		rng => //rng is implicitly assumed by compiler as
+			//parameter of this function since
+			//type of this definition requires one parameter
+			//Lesson: if you stuck and do not understand, see
+			//what you already understand. See previous
+			//examples
+			val (cand, next) = rng.nextInt
+			(if(cand < 0) - (cand + 1) else cand, next)
+	}
+
+	def double2: Rand[Int] = {
+		rng =>
+			val (cand, next) = rng.nextInt
+			val j = if (cand < 0) (cand + 1).toDouble else cand.toDouble
+				(j/Int.MaxValue.toDouble, next)
+	}
+
+	def map[A, B](s: Rand[A])(f: A => B): Rand[B] = {
+		rng => {
+			val (a, rng2) = s(rng)
+			(f(a), rng2)
+		}
+	}
+
+	def nonNegativeEven: Rand[Int] = 
+		map(nonNegativeInt)(i => i - i%2)
+
+	def doubleWithMap = {
+		map(rng => rng.nextInt){
+			x => (if(x<0)(x + 1).toDouble else x.toDouble)/Int.MaxValue.toDouble
+		} 
+	}
+
+	def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
+		rng => val (a, rng2) = ra(rng)
+			val (b, rng3) = rb(rng2)
+			(f(a, b), rng3) 
+	}
+
+	def intDouble2: Rand[(Int, Double)] = {
+		map2(rng => rng.nextInt, ang => RNG.double(ang))((a, b) => (a, b))
+	}
+
+	def both[A, B](ra: Rand[A], rb: Rand[B]): Rand[(A, B)] = 
+		map2(ra, rb)((_, _))
+
+	val randIntDouble: Rand[(Int, Double)] = {
+		//evaluate int value, then double function
+		both(int, double)
+	}
+
+	val randDoubleInt: Rand[(Double, Int)] =
+		//evaluate double function, then int value
+		both(double, int)
+
+	//type Rand[+A] = RNG => (A, RNG)
+	//List(RNG => (A, RNG), RNG => (A, RNG), RNG => (A, RNG) ...)
+	//becomes
+	//RNG => (List[A], RNG)
+	//eq
+	//List(RNG => (Int, RNG), RNG => (Int, RNG), RNG => (Int, RNG) ...)
+	//RNG => (List[Int], RNG)
+	//def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = 
+
+	def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = {
+		fs foldLeft (Rand[List.empty[A]]) {
+			(acc, a) =>
+				val d = 	
+		}
+	}
+	
 }
 
 val maxVal = 10
+
 
 val rng00 = RNG.SimpleRNG(100L)
 val (r001, rng001) = rng00.nextInt
@@ -104,4 +191,9 @@ val (r015, rng015) = RNG.ints(5)(rng014)
 val (r016, rng016) = RNG.ints(5)(rng015)
 val (r017, rng017) = RNG.intsTailRec(5)(rng016)
 val (r018, rng018) = RNG.intsTailRec(5)(rng017)
-
+val r019  = RNG.int
+val r020 = RNG.unit(0)
+val (r021, rng021) = RNG.nonNegative2(rng002)
+val (r022, rng022) = RNG.nonNegativeEven(rng002)
+val (r023, rng023) = RNG.doubleWithMap(rng003)
+val (r024, rng024) = RNG.intDouble2(rng005)
