@@ -180,20 +180,10 @@ object RNG {
 	//
 
 	def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = {
-		/*
-		def inner (xs: List[Rand[A]], prev: Rand[List[A]] = List.empty):Rand[List[A]]  = {
-			xs match {
-				case h :: t =>
-					inner(t, h()::prev)
-					//use map2
-				case _ =>
-					prev
-			}
+		fs.foldRight (unit(List[A]())) {
+			(a, b) =>
+				map2(a, b)((x, y) =>  x :: y)	
 		}
-		inner(fs)
-		*/
-
-		
 		
 		
 	}
@@ -228,3 +218,4 @@ val (r021, rng021) = RNG.nonNegative2(rng002)
 val (r022, rng022) = RNG.nonNegativeEven(rng002)
 val (r023, rng023) = RNG.doubleWithMap(rng003)
 val (r024, rng024) = RNG.intDouble2(rng005)
+val r025 = RNG.sequence(List(RNG.unit(1), RNG.unit(2), RNG.unit(3)))
