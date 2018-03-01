@@ -91,14 +91,20 @@ object RNG {
 
 	val int: Rand[Int] = _.nextInt
 
+	/**
+	 * This unit function accepts one parameter  `a` of class A
+	 * and returns a function that accepts a parameter
+	 * of class RNG and returns tuple2 of (`a`, RNG)
+	 **/
 	def unit[A](a: A): Rand[A] = 
 		rng => (a, rng)
 
 	//try to implement this, see nonNegative above
 	def nonNegative2: Rand[Int] = {
-		rng => //rng is implicitly assumed by compiler as
-			//parameter of this function since
-			//type of this definition requires one parameter
+		rng =>  //this function will return a function which take
+			//a parameter of type RNG and returns tuple2 of (Int, RNG)
+			//rng here is our implementation of returned 
+			//function parameter
 			//Lesson: if you stuck and do not understand, see
 			//what you already understand. See previous
 			//examples
@@ -106,16 +112,20 @@ object RNG {
 			(if(cand < 0) - (cand + 1) else cand, next)
 	}
 
-	def double2: Rand[Int] = {
-		rng =>
+	def double2: Rand[Double] = {
+		rng =>  //this function will return a function which take
+			//a parameter of type RNG and returns tuple2 of (Double, RNG)
 			val (cand, next) = rng.nextInt
 			val j = if (cand < 0) (cand + 1).toDouble else cand.toDouble
 				(j/Int.MaxValue.toDouble, next)
 	}
 
 	def map[A, B](s: Rand[A])(f: A => B): Rand[B] = {
-		rng => {
-			val (a, rng2) = s(rng)
+		rng => {//this function will return a function which takes
+			//a parameter of type RNG and returns tuple2 of (B, RNG)
+			//s is a function that takes RNG and returns tuple2 of (A, RNG)
+			val (a, rng2) = s(rng)//value a extracted by applying 
+						//s to this function param
 			(f(a), rng2)
 		}
 	}
@@ -130,8 +140,14 @@ object RNG {
 	}
 
 	def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
-		rng => val (a, rng2) = ra(rng)
-			val (b, rng3) = rb(rng2)
+		//this function will return a function that takes a parameter of class RNG
+		//and returns tuple of (C, RNG)
+		//ra is a function that takes a parameter of class RNG
+		//and returns tuple of class (A, RNG)
+		//rb is a function that takes a parameter of class RNG
+		//and returns tuple of class (B, RNG)
+		rng => val (a, rng2) = ra(rng)//value 'a' extracted by applying ra to function parameter
+			val (b, rng3) = rb(rng2)//value 'b' extracted by applying rb to rng2
 			(f(a, b), rng3) 
 	}
 
@@ -159,12 +175,27 @@ object RNG {
 	//List(RNG => (Int, RNG), RNG => (Int, RNG), RNG => (Int, RNG) ...)
 	//RNG => (List[Int], RNG)
 	//def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = 
+	//fs is a set of functions which each of them takes RNG as its parameter 
+	//and returns tuple (A, RNG)
+	//
 
 	def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = {
-		fs foldLeft (Rand[List.empty[A]]) {
-			(acc, a) =>
-				val d = 	
+		/*
+		def inner (xs: List[Rand[A]], prev: Rand[List[A]] = List.empty):Rand[List[A]]  = {
+			xs match {
+				case h :: t =>
+					inner(t, h()::prev)
+					//use map2
+				case _ =>
+					prev
+			}
 		}
+		inner(fs)
+		*/
+
+		
+		
+		
 	}
 	
 }
