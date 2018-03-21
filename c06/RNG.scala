@@ -180,13 +180,82 @@ object RNG {
 	//
 
 	def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = {
-		fs.foldRight (unit(List[A]())) {
-			(a, b) =>
-				map2(a, b)((x, y) =>  x :: y)	
+		fs.foldRight(unit(List.empty:List[A]))	{
+			(a, b) => map2(a, b)((x, y) => x :: y)
 		}
 		
-		
 	}
+
+	def nonNegativeLessThan(n: Int): Rand[Int] = {
+		map(nonNegativeInt) ( _ % n )
+	}
+
+	def nonNegativeLessThan2(n: Int): Rand[Int] = {
+		/**
+		 * `i` is next non negative
+		 * `n` is max exclusive
+		 * `mod` is `i` % `n`
+		 * (`n` - 1) is max value inclusive
+		 * `i` + (`n` - `1`) - `mod` < 0 happens if
+		 * `mod` is greater than `i` + `n` - `1`.
+		 * which is when?
+		 * Int.MaxValue = 2147483647
+		 * `i` will never greater than Int.MaxValue
+		 * but if `i` + (`n` - `1`) greater than Int.MaxValue
+		 * they become negative. It is a java limitation
+		 * and this if is just a workaround.
+		 * Why do not just return mod? Because author
+		 * of this book thought that it is not fair
+		 * that if nonNegativeInt returns any module value
+		 * in the last partition befor maxInt, it will not returns
+		 * every valid value. If it ever touch this
+		 * partition some module will appear more
+		 * frequent than other modulo
+		 */
+		rng =>
+			val (i, rng2) = nonNegativeInt(rng)
+			val mod = i % n
+			if (i + (n - 1) - mod >= 0)
+				(mod, rng2)
+			else
+				nonNegativeLessThan2(n)(rng)
+	}
+
+	/**
+	 * This function accepts RNG => (A, RNG)
+	 * Accepts a function A => RNG (B, RNG)
+	 * Returns RNG => (B, RNG)
+	 *
+	 **/
+	def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] = {
+		rng =>
+			val (a, b) = f(rng)
+			g(a)(b)
+	}
+
+	def nonNegativeLessThan3(n: Int): Rand[Int] = {
+		flatMap(nonNegativeInt){ 
+			i => rng =>
+					val mod = i % n
+					if (i + (n - 1) - mod >= 0)
+						(mod, rng)
+					else 
+						nonNegativeLessThan3(n)(rng)	
+		}	
+	}
+
+	def mapViaFlatMap[A, B](s: Rand[A])(f: A => B): Rand[B] = {
+		flatMap(s){ i => rng => (f(i), rng) }
+	}
+
+	def map2ViaFlatMap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
+		flatMap(ra){
+			i => 
+		}		
+	}
+
+	def nonNegativeEven2: Rand[Int] = 
+		mapViaFlatMap(nonNegativeInt)(i => i - i%2)
 	
 }
 
@@ -219,3 +288,5 @@ val (r022, rng022) = RNG.nonNegativeEven(rng002)
 val (r023, rng023) = RNG.doubleWithMap(rng003)
 val (r024, rng024) = RNG.intDouble2(rng005)
 val r025 = RNG.sequence(List(RNG.unit(1), RNG.unit(2), RNG.unit(3)))
+val (r026, rng026) = r025(rng024)
+val (r027, rng027) = RNG.nonNegativeEven2(rng002)
