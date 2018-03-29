@@ -250,13 +250,19 @@ object RNG {
 
 	def map2ViaFlatMap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
 		flatMap(ra){
-			i => 
-		}		
+			i => {rng => flatMap(rb){
+				j =>
+					rng2 => (f(i, j), rng2)
+			}(rng)} 
+		}
 	}
 
 	def nonNegativeEven2: Rand[Int] = 
 		mapViaFlatMap(nonNegativeInt)(i => i - i%2)
 	
+	def intDouble2ViaFlatMap: Rand[(Int, Double)] = {
+		map2ViaFlatMap(rng => rng.nextInt, ang => RNG.double(ang))((a, b) => (a, b))
+	}
 }
 
 val maxVal = 10
@@ -290,3 +296,4 @@ val (r024, rng024) = RNG.intDouble2(rng005)
 val r025 = RNG.sequence(List(RNG.unit(1), RNG.unit(2), RNG.unit(3)))
 val (r026, rng026) = r025(rng024)
 val (r027, rng027) = RNG.nonNegativeEven2(rng002)
+val (r028, rng028) = RNG.intDouble2ViaFlatMap(rng005)
