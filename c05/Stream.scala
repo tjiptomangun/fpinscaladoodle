@@ -6,6 +6,7 @@
  * It is just mean that in first form we need to have () in applying
  * and no need to have () in second form of applying
  *
+ * def foldRight[B](z: => B)(f: (A, => B) => B): B =
  * The arrow `=>` in front of the argument type `B` means that 
  * the function `f` takes its second argument by name and may 
  * not choose to evaluate it. 
