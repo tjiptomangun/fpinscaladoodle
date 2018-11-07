@@ -297,3 +297,16 @@ val r025 = RNG.sequence(List(RNG.unit(1), RNG.unit(2), RNG.unit(3)))
 val (r026, rng026) = r025(rng024)
 val (r027, rng027) = RNG.nonNegativeEven2(rng002)
 val (r028, rng028) = RNG.intDouble2ViaFlatMap(rng005)
+
+//trait RNGR {
+//	def nextInt: (Int, RNGR)
+//}
+
+type Rand[+A] = RNG => (A, RNG) 
+val int : Rand[Int] = _.nextInt
+
+val flgn :(String) => Int = _.length
+val flgn2 :(String) => (String, Int) = (x => (x, x.length))
+
+//val int : Rand[Int] = _.nextTop //10: error: value nextTop is not a member of RNG
+
