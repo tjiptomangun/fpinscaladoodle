@@ -1,4 +1,12 @@
-
+//this test will show what lazyness value is useful for
+//seems that lazy variables in class will only be evaluated when the variables are referenced
+//while non lazy variables will evaluated once the class is instatiated
+//both lazy and strict variables will evaluate once, even if these variables referenced 
+//many times
+//: => Int is non strict, or lazy parameter
+//it is just a common function with zero parameter
+//: => is just syntactic alias of : () =>
+//() => is syntactic alis for the type Function0[A]
 def atest(in1 : => Int) : Int = {
 	println(1)			
 	1
