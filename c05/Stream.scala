@@ -72,6 +72,14 @@
  * But when head is evaluated in which hd head need its value in which
  * hd need to have its value evaluated.
  *
+ * Head and tail cached with lazy.
+ * Lazy variable in a class is evaluated when the variable is referenced 
+ * in class instances.
+ * Strict variable in a class is evaluated as instance of the class is created.
+ * See lazyness.scala for more details.
+ * 
+ * Caching evaluation of non strict parameter value into lazy variable
+ * will delay its evaluation until it needs the value.
  */
 
 import Stream._
@@ -395,9 +403,12 @@ case class Cons[+A] (h: () => A, t: () => Stream[A]) extends Stream[A]
 
 object Stream {
 	def cons[A](hd: => A, tl: => Stream[A]): Stream[A] = {
-		lazy val head = hd;
-		lazy val tail = tl;
-		Cons(() => head, () => tail) 
+
+		lazy val head = hd; 
+		lazy val tail = tl; 
+
+		Cons(() => head, () => tail)
+
 	}
 
 	def cons2[A](hd: => A, tl: => Stream[A]): Stream[A] = {
