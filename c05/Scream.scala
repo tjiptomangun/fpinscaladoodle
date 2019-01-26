@@ -2,7 +2,7 @@
  * Second try on lazyness
  */
 
-import Scream._;
+
 
 sealed trait Scream[+A] {
 	def headOption: Option[A] = this match {
@@ -109,7 +109,26 @@ object Scream {
 
 		cons(0, cons(1, fibgen(1, 0)))
 	}
+
+	def unfold[A, S](z:S)(f:S => Option[(A, S)]): Scream[A]= {
+		f(z) match {
+			case Some(x) =>
+				cons(x._1, unfold(x._2)(f))
+			case None =>
+				empty	
+		}
+	}
+
+	def fibsVU: Scream[Int] = {
+		unfold((0, 1)){
+			x => Some((x._1, (x._2, x._1 + x._2)))
+		}
+	}
 }
 
-val r001 = fibs
-r001.headOption
+val r001 = Scream.fibs
+val e001 = r001.take(10).toList
+
+val r002 = Scream.fibsVU
+val e002 = r002.take(10).toList
+
