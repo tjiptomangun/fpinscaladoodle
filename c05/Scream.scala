@@ -2,6 +2,8 @@
  * Second try on lazyness
  */
 
+import Scream._;
+
 sealed trait Scream[+A] {
 	def headOption: Option[A] = this match {
 		case Empty => None
@@ -11,7 +13,7 @@ sealed trait Scream[+A] {
 	def toList: List[A] = {
 		this match {
 			case Cons(h, t) =>
-				h()::t.toList
+				h()::t().toList
 			case _ =>
 				List.empty[A]
 		}	
@@ -31,4 +33,14 @@ object Scream {
 	def apply[A](as: A*): Scream[A] = {
 		if(as.isEmpty) empty else cons(as.head, apply(as.tail: _*))
 	}
+	def fibs: Scream[Int] = {
+		def fibgen(n: Int, nm1: Int): Scream[Int] = {
+			Scream.cons(n + nm1, fibgen(n + nm1, n))
+		}
+
+		cons(0, cons(1, fibgen(1, 0)))
+	}
 }
+
+val r001 = fibs
+r001.headOption
