@@ -398,6 +398,7 @@ sealed trait Stream[+A] {
 		}._2
 	}
 }
+
 case object Empty extends Stream[Nothing]
 case class Cons[+A] (h: () => A, t: () => Stream[A]) extends Stream[A]
 
