@@ -5,6 +5,7 @@
 
 
 sealed trait Scream[+A] {
+	import Scream._
 	def headOption: Option[A] = this match {
 		case Empty => None
 		case Cons(h, t) => Some(h())
@@ -38,13 +39,13 @@ sealed trait Scream[+A] {
 	def take(n: Int)  : Scream[A] = {
 		n match {
 			case 0 =>
-				Scream.empty
+				empty
 			case _ =>
 				this match {
 					case Cons(h, t) =>
-						Scream.cons(h(), t().take(n - 1))
+						cons(h(), t().take(n - 1))
 					case _ =>
-						Scream.empty 
+						empty 
 				}
 		}
 		
@@ -59,7 +60,7 @@ sealed trait Scream[+A] {
 					case Cons(h, t) =>
 						t().drop(n - 1)
 					case _ =>
-						Scream.empty
+						empty
 				}
 		}
 	}
@@ -67,13 +68,13 @@ sealed trait Scream[+A] {
 	def takeWhile(p: A => Boolean): Scream[A] = {
 		this match {
 			case Empty =>
-				Scream.empty
+				empty
 			case Cons(h, t) =>
 				p(h()) match {
 					case true =>
-						Scream.cons(h(), t().takeWhile(p))
+						cons(h(), t().takeWhile(p))
 					case _ =>
-						Scream.empty
+						empty
 				}
 		}
 	}
@@ -86,6 +87,28 @@ sealed trait Scream[+A] {
 				true
 			else
 				t().exists(p)
+	}
+
+	def mapVU[S](f: A => S): Scream[S] = {
+		unfold(this) { x => 
+			x match {
+				case Cons(h, t) =>
+					Some((f(h()), t()))
+				case _ =>
+					None
+			}
+		}
+	}
+
+	def takeVU(n: Int) = {
+		unfold((n, this)) { x =>
+			x._2 != Empty && x._1 >= 0 match {
+				case true =>
+					Some((x._2.h(), (n - 1, x._2.t())))
+				case _ =>
+					None
+			}
+		}
 	}
 
 }
@@ -104,7 +127,7 @@ object Scream {
 	}
 	def fibs: Scream[Int] = {
 		def fibgen(n: Int, nm1: Int): Scream[Int] = {
-			Scream.cons(n + nm1, fibgen(n + nm1, n))
+			cons(n + nm1, fibgen(n + nm1, n))
 		}
 
 		cons(0, cons(1, fibgen(1, 0)))
@@ -124,6 +147,10 @@ object Scream {
 			x => Some((x._1, (x._2, x._1 + x._2)))
 		}
 	}
+
+	def fromVU(n: Int) = unfold(n)(x => Some((x, x+1)))
+
+	def constantVU(n: Int): Scream[Int] = unfold(n){x => Some((x, x))} 
 }
 
 val r001 = Scream.fibs
@@ -132,3 +159,14 @@ val e001 = r001.take(10).toList
 val r002 = Scream.fibsVU
 val e002 = r002.take(10).toList
 
+val r003 = Scream.fromVU(5)
+val e003 = r003.take(4).toList
+
+val r004 = Scream.constantVU(5)
+val e004 = r004.take(4).toList
+
+val r005 = Scream.fromVU(10)
+val e005 = r005.mapVU(x => x + 100)
+val f005 = e005.take(5).toList
+
+val e006 = e005.takeVU(5).toList
