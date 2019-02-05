@@ -102,15 +102,61 @@ sealed trait Scream[+A] {
 
 	def takeVU(n: Int) = {
 		unfold((n, this)) { x =>
-			x._2 != Empty && x._1 >= 0 match {
-				case true =>
-					Some((x._2.h(), (n - 1, x._2.t())))
+			x match {
+				case (n:Int, Cons(h, t)) if n > 0 => 
+					Some((h(), (n - 1, t())))
 				case _ =>
 					None
 			}
 		}
+		
 	}
 
+	def zipVU[B](p: Scream[B]): Scream[(A, B)] = {
+		unfold((this, p)){ x => 
+			x match {
+				case ((Cons(h, t), Cons(k, e))) =>
+					Some((h(), k()), (t(), e()))
+				case _ =>
+					None
+			}
+			
+		}
+	}
+
+	def zipAll[B](p: Scream[B]): Scream[(Option[A], Option[B])] = {
+		unfold((this, p)){x=>
+			x match {
+				case ((Cons(h, t), Cons(k,e))) =>
+					Some(((Some(h()), Some(k())), (t(), e())))
+				case ((Cons(h,t), _)) =>
+					Some(((Some(h()), None), (t(), Scream.empty)))
+				case ((_ , Cons(k, e))) =>
+					Some(((None, Some(k())), (Scream.empty, e())))
+				case(_, _) =>
+					None
+				}
+			}
+		
+	}
+
+	def startsWith[A](a: Scream[A]): Boolean = {
+		(this, a) match {
+			case ((Cons(h, t), Cons(k, e))) =>
+				if (h() == k())
+					t().startsWith(e())
+				else
+					false
+			case (empty, Cons(k, e)) =>
+				false
+			case (Cons(h, t), empty) =>
+				true
+			case _ =>
+				true
+		}
+	}
+
+	
 }
 case object Empty extends Scream[Nothing]
 case class Cons[+A] (h: () => A, t: () => Scream[A]) extends Scream[A]
@@ -170,3 +216,14 @@ val e005 = r005.mapVU(x => x + 100)
 val f005 = e005.take(5).toList
 
 val e006 = e005.takeVU(5).toList
+
+val r007 = r004.zipVU(r005)
+val e007 = r007.takeVU(3).toList
+
+val r008 = r005.zipAll(Scream.empty)
+val e008 = r008.take(5).toList
+
+val r009 = Scream(List(1, 2, 3, 4):_*)
+val s009 = Scream(List(1, 2):_*)
+val e009 = r009.startsWith(s009)
+val f009 = s009.startsWith(r009)
