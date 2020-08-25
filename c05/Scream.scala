@@ -155,7 +155,11 @@ sealed trait Scream[+A] {
 				true
 		}
 	}
-
+	//use unfold please
+	def tails: Scream[Scream[A]] = {
+			empty
+		}
+	}
 	
 }
 case object Empty extends Scream[Nothing]
@@ -179,6 +183,11 @@ object Scream {
 		cons(0, cons(1, fibgen(1, 0)))
 	}
 
+	/*
+     * this function is function with multiple parameter group 
+	 * check 
+	 * https://alvinalexander.com/scala/fp-book/how-to-write-functions-multiple-parameter-groups/
+	**/
 	def unfold[A, S](z:S)(f:S => Option[(A, S)]): Scream[A]= {
 		f(z) match {
 			case Some(x) =>
@@ -187,7 +196,7 @@ object Scream {
 				empty	
 		}
 	}
-
+	//VU -> via unfold
 	def fibsVU: Scream[Int] = {
 		unfold((0, 1)){
 			x => Some((x._1, (x._2, x._1 + x._2)))
@@ -227,3 +236,4 @@ val r009 = Scream(List(1, 2, 3, 4):_*)
 val s009 = Scream(List(1, 2):_*)
 val e009 = r009.startsWith(s009)
 val f009 = s009.startsWith(r009)
+val g009 = r009.tails
