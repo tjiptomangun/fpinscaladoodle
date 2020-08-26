@@ -157,8 +157,7 @@ sealed trait Scream[+A] {
 	}
 	//use unfold please
 	def tails: Scream[Scream[A]] = {
-			empty
-		}
+			empty 
 	}
 	
 }
