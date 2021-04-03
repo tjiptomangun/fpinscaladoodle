@@ -319,7 +319,7 @@ val r020 = RNG.unit(0)
 val (r021, rng021) = RNG.nonNegative2(rng002)
 val (r022, rng022) = RNG.nonNegativeEven(rng002)
 val (r023, rng023) = RNG.doubleWithMap(rng003)
-r023
+System.out.println(r023);
 val (r024, rng024) = RNG.intDouble2(rng005)
 val r025 = RNG.sequence(List(RNG.unit(1), RNG.unit(2), RNG.unit(3)))
 val (r026, rng026) = r025(rng024)
@@ -333,12 +333,25 @@ RNG.int
 //trait RNGR {
 //	def nextInt: (Int, RNGR)
 //}
-RNG.rollDie;
-type Rand[+A] = RNG => (A, RNG) 
-val int : Rand[Int] = _.nextInt
+RNG.rollDie(RNG.SimpleRNG(101));
 
 val flgn :(String) => Int = _.length
 val flgn2 :(String) => (String, Int) = (x => (x, x.length))
 
 //val int : Rand[Int] = _.nextTop //10: error: value nextTop is not a member of RNG
+
+case class State[S, +A] (run: S => (A, S)) {
+
+  def map[B] (fn : A => B): State[S, B] = { 
+    State( x => {
+      val (a, y) = run(x);
+      (f(a), y)
+    })
+  }
+} 
+object State {
+    
+}
+
+type Rand[A] = State[RNG, A];
 
