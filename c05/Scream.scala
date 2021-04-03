@@ -89,6 +89,21 @@ sealed trait Scream[+A] {
 				t().exists(p)
 	}
 
+	def foldRight[B](z: => B) (f: (A, =>B) =>B): B = {
+		this match {
+			case Cons(h, t) => f(h(), t().foldRight(z)(f))
+			case _ => z
+		} 
+	}
+
+	def existsVFR(p: A=> Boolean): Boolean = 
+		foldRight(false) ((a, b) => p(a) || b)
+
+	def mapVFR[S](f: A=>S): Scream [S] = {
+		this.foldRight(empty[S])((a, b) => cons(f(a), b))
+	}
+	
+
 	def mapVU[S](f: A => S): Scream[S] = {
 		unfold(this) { x => 
 			x match {
@@ -157,7 +172,23 @@ sealed trait Scream[+A] {
 	}
 	//use unfold please
 	def tails: Scream[Scream[A]] = {
-			empty 
+			unfold(this){x =>
+				x match {
+					case Cons(h, t) =>
+						Some(x, t())
+					case _ =>
+						None
+				}
+			}
+	}
+
+	def hasSubsequence[A](s:Scream[A]): Boolean = {
+		tails existsVFR (_ startsWith s)	
+	}
+	def scanRight[S](s:S)(f:(A, =>S) => S): Scream[S] = {
+		tails mapVU (x => x.foldRight(s)(f))
+		//here it is clear that tails type parameter is this 
+		//Scream type parameter , that is A
 	}
 	
 }
@@ -186,6 +217,8 @@ object Scream {
      * this function is function with multiple parameter group 
 	 * check 
 	 * https://alvinalexander.com/scala/fp-book/how-to-write-functions-multiple-parameter-groups/
+	 * On result of function f(s:S) is Some 2-tuple ((a:A, s:S))
+	 * cons ._1 head with unfold of ._2
 	**/
 	def unfold[A, S](z:S)(f:S => Option[(A, S)]): Scream[A]= {
 		f(z) match {
@@ -235,4 +268,9 @@ val r009 = Scream(List(1, 2, 3, 4):_*)
 val s009 = Scream(List(1, 2):_*)
 val e009 = r009.startsWith(s009)
 val f009 = s009.startsWith(r009)
-val g009 = r009.tails
+val g009 = r009.hasSubsequence(s009) //true
+val h009 = r009.hasSubsequence(Scream(List(2, 3):_*)) //true
+val i009 = r009.hasSubsequence(Scream(List(1, 3, 4):_*))//false 
+val a010 = Scream(1, 2, 3).scanRight(0)(_ + _).toList//List(6, 5, 3)
+val a011 = r002.mapVFR(x => x * x).take(7).toList//List(0, 1, 1, 4, 9, 25, 64)
+

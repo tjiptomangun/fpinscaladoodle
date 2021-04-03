@@ -50,6 +50,7 @@ object RNG {
 	}
 
 	def intsMe(count: Int)(curr: RNG): (List[Int], RNG) = {
+		import scala.language.postfixOps
 		val l = 0 to count toList
 		val i = curr.nextInt
 		val rz = l.foldLeft((List(i._1), i._2)) {(b, a) =>
@@ -90,6 +91,7 @@ object RNG {
 	type Rand[+A] = RNG => (A, RNG)
 
 	val int: Rand[Int] = _.nextInt
+	val abc : Rand[Int] = _.nextInt
 
 	/**
 	 * This unit function accepts one parameter  `a` of class A
@@ -98,6 +100,14 @@ object RNG {
 	 **/
 	def unit[A](a: A): Rand[A] = 
 		rng => (a, rng)
+
+	/**
+		* same as unit, just to show that
+		* this function will use pattern recognition
+		*/
+	def unit2[A](a: A): Rand[A] =
+		s => (a, s)
+
 
 	//try to implement this, see nonNegative above
 	def nonNegative2: Rand[Int] = {
@@ -134,7 +144,9 @@ object RNG {
 		map(nonNegativeInt)(i => i - i%2)
 
 	def doubleWithMap = {
-		map(rng => rng.nextInt){
+		//map(rng => rng.nextInt){
+		//that line above can be simplified
+		map(_.nextInt){
 			x => (if(x<0)(x + 1).toDouble else x.toDouble)/Int.MaxValue.toDouble
 		} 
 	}
@@ -152,9 +164,12 @@ object RNG {
 	}
 
 	def intDouble2: Rand[(Int, Double)] = {
-		map2(rng => rng.nextInt, ang => RNG.double(ang))((a, b) => (a, b))
+    //map2(rng => rng.nextInt, ang => RNG.double(ang))((a, b) => (a, b))
+    //that line above can be simplified using line below
+    map2(_.nextInt, RNG.double)((a, b) => (a, b))
 	}
 
+	// combine the value of type A and the value of type B using combinators and map2
 	def both[A, B](ra: Rand[A], rb: Rand[B]): Rand[(A, B)] = 
 		map2(ra, rb)((_, _))
 
@@ -167,7 +182,11 @@ object RNG {
 		//evaluate double function, then int value
 		both(double, int)
 
-	//type Rand[+A] = RNG => (A, RNG)
+
+  //Implement sequence for combining a List of transitions into a single
+  //transition
+  //
+  // type Rand[+A] = RNG => (A, RNG)
 	//List(RNG => (A, RNG), RNG => (A, RNG), RNG => (A, RNG) ...)
 	//becomes
 	//RNG => (List[A], RNG)
@@ -181,11 +200,16 @@ object RNG {
 
 	def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = {
 		fs.foldRight(unit(List.empty:List[A]))	{
+      //foldRight first partial param is initial value with type is return type
 			(a, b) => map2(a, b)((x, y) => x :: y)
-		}
-		
+		} 
 	}
 
+//	def sequenceBreakDown[A](fs: List[Rand[A]]): Rand[List[A]] = {
+//		fs.foldRight(rng:RNG => (List.empty:List[A], rng))	{
+//			(a, b) => map2(a, b)((x, y) => x :: y)
+//		}
+//	}
 	def nonNegativeLessThan(n: Int): Rand[Int] = {
 		map(nonNegativeInt) ( _ % n )
 	}
@@ -223,7 +247,7 @@ object RNG {
 
 	/**
 	 * This function accepts RNG => (A, RNG)
-	 * Accepts a function A => RNG (B, RNG)
+	 * and function A => RNG  => (B, RNG)
 	 * Returns RNG => (B, RNG)
 	 *
 	 **/
@@ -263,7 +287,10 @@ object RNG {
 	def intDouble2ViaFlatMap: Rand[(Int, Double)] = {
 		map2ViaFlatMap(rng => rng.nextInt, ang => RNG.double(ang))((a, b) => (a, b))
 	}
+
+	def rollDie: Rand[Int]  = map(nonNegativeLessThan(6)) (_ + 1);
 }
+
 
 val maxVal = 10
 
@@ -292,16 +319,21 @@ val r020 = RNG.unit(0)
 val (r021, rng021) = RNG.nonNegative2(rng002)
 val (r022, rng022) = RNG.nonNegativeEven(rng002)
 val (r023, rng023) = RNG.doubleWithMap(rng003)
+r023
 val (r024, rng024) = RNG.intDouble2(rng005)
 val r025 = RNG.sequence(List(RNG.unit(1), RNG.unit(2), RNG.unit(3)))
 val (r026, rng026) = r025(rng024)
 val (r027, rng027) = RNG.nonNegativeEven2(rng002)
 val (r028, rng028) = RNG.intDouble2ViaFlatMap(rng005)
-
+RNG.nonNegativeLessThan(10)(RNG.SimpleRNG(10))
+//test what is abc
+RNG.abc
+//test what is int
+RNG.int
 //trait RNGR {
 //	def nextInt: (Int, RNGR)
 //}
-
+RNG.rollDie;
 type Rand[+A] = RNG => (A, RNG) 
 val int : Rand[Int] = _.nextInt
 

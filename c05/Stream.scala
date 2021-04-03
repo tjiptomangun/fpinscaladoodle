@@ -2,7 +2,7 @@
 /* 
  * Notes
  * x: () => A and x: => A are different on calling style and signature but 
- * do exactly the same thing.
+ * do exactly the same thing, that is pass unevaluated value.
  * It is just mean that in first form we need to have () in applying
  * and no need to have () in second form of applying
  *
