@@ -340,18 +340,21 @@ val flgn2 :(String) => (String, Int) = (x => (x, x.length))
 
 //val int : Rand[Int] = _.nextTop //10: error: value nextTop is not a member of RNG
 
-case class State[S, +A] (run: S => (A, S)) {
-
+case class State[S, +A] (run: S => (A, S)) { 
   def map[B] (fn : A => B): State[S, B] = { 
     State( x => {
       val (a, y) = run(x);
-      (f(a), y)
+      (fn(a), y)
     })
   }
+  // def map2
 } 
-object State {
-    
+object State{ 
+  type Rand[B] = State[RNG, B];
+  def unit[S, A] (a: A) : State[S,A] =  {
+    r => (a, r); 
+  }
 }
 
-type Rand[A] = State[RNG, A];
+
 
