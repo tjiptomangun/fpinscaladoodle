@@ -289,6 +289,7 @@ object RNG {
 	}
 
 	def rollDie: Rand[Int]  = map(nonNegativeLessThan(6)) (_ + 1);
+
 }
 
 
@@ -315,11 +316,12 @@ val (r016, rng016) = RNG.ints(5)(rng015)
 val (r017, rng017) = RNG.intsTailRec(5)(rng016)
 val (r018, rng018) = RNG.intsTailRec(5)(rng017)
 val r019  = RNG.int
+r019(RNG.SimpleRNG(10)) 
 val r020 = RNG.unit(0)
 val (r021, rng021) = RNG.nonNegative2(rng002)
 val (r022, rng022) = RNG.nonNegativeEven(rng002)
 val (r023, rng023) = RNG.doubleWithMap(rng003)
-System.out.println(r023);
+//System.out.println(r023);
 val (r024, rng024) = RNG.intDouble2(rng005)
 val r025 = RNG.sequence(List(RNG.unit(1), RNG.unit(2), RNG.unit(3)))
 val (r026, rng026) = r025(rng024)
@@ -347,14 +349,73 @@ case class State[S, +A] (run: S => (A, S)) {
       (fn(a), y)
     })
   }
-  // def map2
-} 
+  def map2[B, C](sb: State[S, B])(f: (A, B) => C): State[S, C] =  {
+	State((s: S) => {
+		val (a, x) = this.run(s);
+		val (b, y) = sb.run(x);
+		(f(a, b), y); 
+	})
+  } 
+  def flatMap[B](g: A => State[S, B]): State[S, B] = {
+	State((s: S) => {
+		val (a, s1) = this.run(s);
+		g(a).run(s1)
+    })
+  }
+
+
+}
+
 object State{ 
   type Rand[B] = State[RNG, B];
   def unit[S, A] (a: A) : State[S,A] =  {
-    r => (a, r); 
+    State((s:S) => (a, s)); 
   }
+  def sequence[S, A](fs: List[State[S, A]]): State[S, List[A]] = {
+	fs.foldRight(unit[S, List[A]](List.empty: List[A])) {
+		(f, acc) => f.map2(acc) {(x, y) => x :: y}
+	}
+  } 
 }
 
+val a = State(RNG.nonNegativeInt)
+val b = a.map((x:Int) => {x + 10 })
+a.run(RNG.SimpleRNG(10))
+b.run(RNG.SimpleRNG(15))
+val c: State.Rand[(Double, Int)] = State(RNG.doubleInt)
 
+type Rand[A] = State[RNG, A];
+val int: Rand[Int] = State((x:RNG) => {x.nextInt} )
+def ints(c: Int): Rand[List[Int]] = {
+  import scala.language.postfixOps
+  val l = 0 to c toList;
+  State(
+  (rng: RNG) => {
+    val y = l.foldLeft((List.empty: List[Int], rng.nextInt._2)) {
+      (acc, _) => {
+        val (x: Int, y) = acc._2.nextInt;
+        (x :: acc._1, y)
+      };
+    }
+    y
+  }
+ )
+}
+val ns: Rand[List[Int]] = 
+	int.flatMap( x => { 
+		int.flatMap ( y => 
+			ints(x % 10).map(xs => //limit x, nexInt is unpredictable
+				xs.map( _ % y)
+			)
+		)
+		}
+	)
+ns.run(RNG.SimpleRNG(10))._1
 
+val ns2: Rand[List[Int]] = for {
+	x <- int
+    y <- int
+	xs <- ints(x % 10)
+} yield xs.map(_ % y)
+
+ns2.run(RNG.SimpleRNG(1))._1
