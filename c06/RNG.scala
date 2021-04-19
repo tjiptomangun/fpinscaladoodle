@@ -412,9 +412,38 @@ val ns: Rand[List[Int]] =
 ns.run(RNG.SimpleRNG(10))._1
 
 val ns2: Rand[List[Int]] = for {
-	x <- int
-    y <- int
-	xs <- ints(x % 10)
+  x <- int
+  y <- int
+  xs <- ints(x % 10)
 } yield xs.map(_ % y)
 
 ns2.run(RNG.SimpleRNG(1))._1
+
+sealed trait Input
+case object Coin extends Input
+case object Turn extends Input
+case class Machine(locked: Boolean, candies: Int, coins: Int) {
+    def action(x: Input): Machine = {
+        x match  {
+          case Coin if this.candies > 0 => {
+            Machine(false, this.candies, this.coins + 1)
+          }
+          case Turn if !this.locked  => {
+            Machine(true, this.candies - 1, this.coins);
+          }
+          case _=>
+            this;
+              
+        }
+    }
+}
+
+def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
+  inputs.foldRight(_: State[Machine, (Int, Int)]) {
+    (z, a) =>  {
+        (z.input(a), (z._1, z._2))
+      
+    }
+  }
+}
+
