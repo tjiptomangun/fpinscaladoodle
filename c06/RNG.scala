@@ -321,7 +321,7 @@ val r020 = RNG.unit(0)
 val (r021, rng021) = RNG.nonNegative2(rng002)
 val (r022, rng022) = RNG.nonNegativeEven(rng002)
 val (r023, rng023) = RNG.doubleWithMap(rng003)
-//System.out.println(r023);
+System.out.println(r023);
 val (r024, rng024) = RNG.intDouble2(rng005)
 val r025 = RNG.sequence(List(RNG.unit(1), RNG.unit(2), RNG.unit(3)))
 val (r026, rng026) = r025(rng024)
@@ -364,8 +364,7 @@ case class State[S, +A] (run: S => (A, S)) {
   }
 
 
-}
-
+} 
 object State{ 
   type Rand[B] = State[RNG, B];
   def unit[S, A] (a: A) : State[S,A] =  {
@@ -413,9 +412,38 @@ val ns: Rand[List[Int]] =
 ns.run(RNG.SimpleRNG(10))._1
 
 val ns2: Rand[List[Int]] = for {
-	x <- int
-    y <- int
-	xs <- ints(x % 10)
+  x <- int
+  y <- int
+  xs <- ints(x % 10)
 } yield xs.map(_ % y)
 
 ns2.run(RNG.SimpleRNG(1))._1
+
+sealed trait Input
+case object Coin extends Input
+case object Turn extends Input
+case class Machine(locked: Boolean, candies: Int, coins: Int) {
+    def action(x: Input): Machine = {
+        x match  {
+          case Coin if this.candies > 0 => {
+            Machine(false, this.candies, this.coins + 1)
+          }
+          case Turn if !this.locked  => {
+            Machine(true, this.candies - 1, this.coins);
+          }
+          case _=>
+            this;
+              
+        }
+    }
+}
+
+def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
+  inputs.foldRight(_: State[Machine, (Int, Int)]) {
+    (z, a) =>  {
+        (z.input(a), (z._1, z._2))
+      
+    }
+  }
+}
+
