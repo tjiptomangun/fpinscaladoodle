@@ -366,8 +366,8 @@ case class State[S, +A] (run: S => (A, S)) {
 	def testGet () = {
 			get[S]
   }
-  def testSet () = {
-			set(testGet())
+  def testSet[S](x:S) = {
+			set(x)
   }
 
 
@@ -391,6 +391,11 @@ object State{
 			s <- get
 		_ <- set(f(s))
   }yield()
+
+  def modify5[S](f: S => S): State[S, Unit] = for {
+			s <- get
+		c <- set(f(s))
+  }yield(c)
 
   def modify2[S] (f: S=> S): State[S, Unit] = { 
 		get.flatMap(s => set(f(s)).map(_ => ()))
@@ -494,6 +499,18 @@ a.testSet();
 
 c.testGet();
 //res32: State[State[RNG,RNG],Unit] = State(State$$$Lambda$1713/1361161254@f5b882b) 
+
+
+State.get[Int]
+//res63: State[Int,Int] = State(State$$$Lambda$1578/1216312958@5a1b38c3)
+
+
+State.set(Int)
+//res61: State[Int.type,Unit] = State(State$$$Lambda$1580/1477011208@cf194d7)
+
+State.set(State)
+//res62: State[State.type,Unit] = State(State$$$Lambda$1580/1477011208@5b075304)
+
 
 import State._
 /**
