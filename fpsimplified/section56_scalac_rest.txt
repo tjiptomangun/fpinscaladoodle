@@ -1,0 +1,54 @@
+[[syntax trees at end of                    parser]] // section56.scalac.scala
+package <empty> {
+  object section56 extends scala.AnyRef {
+    def <init>() = {
+      super.<init>();
+      ()
+    };
+    case class State[S, A] extends scala.Product with scala.Serializable {
+      <caseaccessor> <paramaccessor> val run: _root_.scala.Function1[S, scala.Tuple2[S, A]] = _;
+      def <init>(run: _root_.scala.Function1[S, scala.Tuple2[S, A]]) = {
+        super.<init>();
+        ()
+      };
+      def flatMap[B](g: _root_.scala.Function1[A, State[S, B]]): State[S, B] = State(((s0: S) => {
+        <synthetic> <artifact> private[this] val x$1 = run(s0): @scala.unchecked match {
+          case scala.Tuple2((s1 @ _), (a @ _)) => scala.Tuple2(s1, a)
+        };
+        val s1 = x$1._1;
+        val a = x$1._2;
+        g(a).run(s1)
+      }));
+      import State._;
+      def map[B](f: _root_.scala.Function1[A, B]): State[S, B] = flatMap(((a) => State.point(f(a))))
+    };
+    object State extends scala.AnyRef {
+      def <init>() = {
+        super.<init>();
+        ()
+      };
+      def point[S, A](v: A): State[S, A] = State(run = ((s) => scala.Tuple2(s, v)))
+    };
+    case class GolfState extends scala.Product with scala.Serializable {
+      <caseaccessor> <paramaccessor> val distance: Int = _;
+      def <init>(distance: Int) = {
+        super.<init>();
+        ()
+      }
+    };
+    def swing(distance: Int): State[GolfState, Int] = State(((s: GolfState) => {
+      val newAmount = s.distance.$plus(distance);
+      scala.Tuple2(GolfState(newAmount), newAmount)
+    }));
+    val stateWithNewDistance: State[GolfState, Int] = swing(20).flatMap(((x$3) => x$3: @scala.unchecked match {
+      case _ => swing(15).flatMap(((x$2) => x$2: @scala.unchecked match {
+        case _ => swing(10).map(((totalDistance) => totalDistance))
+      }))
+    }));
+    val beginningState = GolfState(0);
+    val result: scala.Tuple2[GolfState, Int] = stateWithNewDistance.run(beginningState);
+    println(StringContext("GolfState:      ", "").s(result._1));
+    println(StringContext("Total Distance: ", "").s(result._2))
+  }
+}
+

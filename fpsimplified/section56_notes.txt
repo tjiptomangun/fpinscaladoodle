@@ -1,0 +1,13 @@
+State((s) => {
+  GolfState(s.distance + 20), (s.distance + 20)
+}).flatMap((_) => State{
+ (t) =>  {
+   GolfState(t.distance + 15), (t.distance + 15)
+ }
+}).flatmap((_) => {
+  State{
+    (u)  => {
+      GolfState(u.distance + 10), (u.distance + 10)
+    }
+  }
+}).map((totalDistance) => totalDistance)

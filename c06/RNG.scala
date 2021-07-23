@@ -562,6 +562,10 @@ def simulateMachine5(inputs: List[Input]): State[Machine, (Int, Int)] =
 def simulateMachine4(inputs: List[Input]): State[Machine, (Int, Int)] = 
     sequence(inputs map (modify4[Machine] _ compose update)).flatMap(_ => get.map(s => (s.coins, s.candies)))
 
+def simulateMachine6(inputs: List[Input]): State[Machine, (Int, Int)] = for {
+    _ <- sequence(inputs map ({ modify[Machine] _ compose update}))
+    s <- get
+} yield (s.coins, s.candies)
 
 modify[Machine] _
 //val res38: (Machine => Machine) => State[Machine,Unit] = $Lambda$2282/1546695625@4957f90
@@ -576,4 +580,5 @@ simulateMachine2(inputCoin).run(machine1)
 simulateMachine3(inputCoin).run(machine1)
 simulateMachine4(inputCoin).run(machine1)
 simulateMachine5(inputCoin).run(machine1)
+simulateMachine6(inputCoin).run(machine1)
 
