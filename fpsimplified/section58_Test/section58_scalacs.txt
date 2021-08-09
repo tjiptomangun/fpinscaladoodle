@@ -1,0 +1,97 @@
+[[syntax trees at end of                    parser]] // section58.scalac.scala
+package <empty> {
+  class IO[A] extends scala.AnyRef {
+    <paramaccessor> private[this] val constructorCodeBlock: _root_.scala.<byname>[A] = _;
+    private def <init>(constructorCodeBlock: _root_.scala.<byname>[A]) = {
+      super.<init>();
+      ()
+    };
+    def run = constructorCodeBlock;
+    def flatMap[B](customAlgorithm: _root_.scala.Function1[A, IO[B]]): IO[B] = {
+      val res1: IO[B] = customAlgorithm(run);
+      val res2: B = res1.run;
+      IO(res2)
+    };
+    def map[B](f: _root_.scala.Function1[A, B]): IO[B] = flatMap(((a) => IO(f(a))))
+  };
+  object IO extends scala.AnyRef {
+    def <init>() = {
+      super.<init>();
+      ()
+    };
+    def apply[A](a: _root_.scala.<byname>[A]): IO[A] = new IO(a)
+  };
+  abstract trait Monad[M[_]] extends scala.AnyRef {
+    def $init$() = {
+      ()
+    };
+    def lift[A](a: _root_.scala.<byname>[A]): M[A];
+    def flatMap[A, B](ma: M[A])(f: _root_.scala.Function1[A, M[B]]): M[B];
+    def map[A, B](ma: M[A])(f: _root_.scala.Function1[A, B]): M[B] = flatMap(ma)(((a) => lift[B](f(a))))
+  };
+  case class StateT[M[_], S, A] extends scala.Product with scala.Serializable {
+    <caseaccessor> <paramaccessor> val run: _root_.scala.Function1[S, M[scala.Tuple2[S, A]]] = _;
+    def <init>(run: _root_.scala.Function1[S, M[scala.Tuple2[S, A]]]) = {
+      super.<init>();
+      ()
+    };
+    def flatMap[B](g: _root_.scala.Function1[A, StateT[M, S, B]])(implicit M: Monad[M]): StateT[M, S, B] = StateT(((s0: S) => M.flatMap(run(s0))(<empty> match {
+      case scala.Tuple2((s1 @ _), (a @ _)) => g(a).run(s1)
+    })));
+    def map[B](f: _root_.scala.Function1[A, B])(implicit M: Monad[M]): StateT[M, S, B] = flatMap(((a) => StateT.point(f(a))))
+  };
+  object StateT extends scala.AnyRef {
+    def <init>() = {
+      super.<init>();
+      ()
+    };
+    def point[M[_], S, A](v: A)(implicit M: Monad[M]): StateT[M, S, A] = StateT(run = ((s) => M.lift(scala.Tuple2(s, v))))
+  };
+  object Main extends App {
+    def <init>() = {
+      super.<init>();
+      ()
+    };
+    def getLine(): IO[String] = IO(scala.io.StdIn.readLine());
+    def putStr(s: String): IO[Unit] = IO(print(s));
+    def toInt(s: String): Int = try {
+      s.toInt
+    } catch {
+      case (e @ (_: NumberFormatException)) => 0
+    };
+    case class SumState extends scala.Product with scala.Serializable {
+      <caseaccessor> <paramaccessor> val sum: Int = _;
+      def <init>(sum: Int) = {
+        super.<init>();
+        ()
+      }
+    };
+    implicit val IOMonad = {
+      final class $anon extends Monad[IO] {
+        def <init>() = {
+          super.<init>();
+          ()
+        };
+        def lift[A](a: _root_.scala.<byname>[A]): IO[A] = IO(a);
+        override def flatMap[A, B](ma: IO[A])(f: _root_.scala.Function1[A, IO[B]]): IO[B] = ma.flatMap(f)
+      };
+      new $anon()
+    };
+    def doSumWithStateT(newValue: Int): StateT[IO, SumState, Int] = StateT(((oldState: SumState) => {
+      val newSum = newValue.$plus(oldState.sum);
+      val newState: SumState = oldState.copy(sum = newSum);
+      IO(newState, newSum)
+    }));
+    def liftIOIntoStateT[A](io: IO[A]): StateT[IO, SumState, A] = StateT(((s: SumState) => io.map(((a) => scala.Tuple2(s, a)))));
+    def getLineAsStateT(): StateT[IO, SumState, String] = liftIOIntoStateT(getLine);
+    def putStrAsStateT(s: String): StateT[IO, SumState, Unit] = liftIOIntoStateT(putStr(s));
+    def sumLoop: StateT[IO, SumState, Unit] = putStrAsStateT("\ngive me an int: ").flatMap(((x$3) => x$3: @scala.unchecked match {
+      case _ => getLineAsStateT.flatMap(((input) => liftIOIntoStateT(IO(toInt(input))).flatMap(((i) => doSumWithStateT(i).flatMap(((x$2) => x$2: @scala.unchecked match {
+        case _ => sumLoop.map(((x$1) => x$1: @scala.unchecked match {
+          case _ => ()
+        }))
+      }))))))
+    }))
+  }
+}
+
