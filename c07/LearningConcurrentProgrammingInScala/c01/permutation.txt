@@ -1,0 +1,150 @@
+//https://www.geeksforgeeks.org/write-a-c-program-to-print-all-permutations-of-a-given-string/
+
+case C D only
+
+
+A B C D
+
+A (0)
+Add (0) to accum
+remove (0) 
+remainder B(0) C(1) D(2)
+      B add(0) to accum
+      remove(0)
+      remainder C(0) D(1)
+                 C add (0) to accum
+                 remove (0)
+                 remainder  D (0)
+                           D   add (0) to accum
+                           remove (0)
+                           remainder   Nil
+                           return accum
+                 
+                 D add (1) to accum
+                 remove (1)
+                 remainder  C (0)
+                            remove (0)
+                            C   remainder   Nil
+      
+      C remove(1)  remainder B(0) D(1)
+                 B remove (1)  remainder D(4)
+                           D   remainder  Nil
+
+                 D remove (4)  remainder B(1)
+                           B   remainder  Nil
+      
+      
+      D remove(3)  remainder B(1) C(2)
+                 B remove(1)   remainder C(2)
+                           C   remainder  Nil
+                 C remove(2)   remainder B(1)
+                           B   remainder  Nil
+
+
+
+B (1)
+Add (1) to accum1
+remove (1)
+remainder A(0) C(2) D(3)
+
+C (2)
+
+
+D (3)
+
+val list: List[String]  = List("A", "B")
+list.foldLeft(List(List.empty:List[String]), List.empty:List[String])(((accum:List[List:String], List[String]), list:List[String]) => {
+
+})
+
+def jamrong(acc : (List[List[A]], List[A]), list: List[A]) : List[List[A]] = {
+  list match {
+    case h :: t => {
+            list.zipWithIndex.map ((x) => {
+              println(s"x is $x")
+              val (l1, l2) = list splitAt (x._2)
+              println(s"l1 is $l1")
+              println(s"l2 is $l2")
+              val toPush = l2.head
+              println(s"toPush is $toPush ")
+              val nl = l1 ++ l2.tail
+              println(s"nl is $nl")
+              jamrong( nl
+            })
+    }
+    case _ =>
+      Nil
+  }
+
+}
+what is this accum, how is it suppose to work
+val tmp: ListBuffer[String]
+val list: List[String]  = List("A", "B")
+val l3 = list match {
+  case h :: t => {
+          list.zipWithIndex.map ((x) => {
+            println(s"x is $x")
+            val (l1, l2) = list splitAt (x._2)
+            println(s"l1 is $l1")
+            println(s"l2 is $l2")
+            val toPush = l2.head
+            println(s"toPush is $toPush ")
+            val nl = l1 ++ l2.tail
+            println(s"nl is $nl")
+
+            nl
+          })
+  }
+  case _ =>
+    Nil
+}
+
+/**
+ * you want this return List[List[T]]
+ * but since you call this function recursively in
+ * map , that makes it impossible
+ */
+terong((List.empty:List[List[String]], List.empty:List[String]), List("A", "B", "A"))
+def terong [T](accum: (List[List[T]],  List[T]), list:List[T]): List[List[T]]  = {
+    list match {
+      case h :: t => {
+              list.zipWithIndex.flatMap ((x) => {
+                //println(s"x is $x")
+                val (l1, l2) = list splitAt (x._2)
+                //println(s"l1 is $l1")
+                //println(s"l2 is $l2")
+                val toPush = l2.head
+                //println(s"toPush is $toPush ")
+                val nl = l1 ++ l2.tail
+                println(s"nl is $nl")
+                terong((accum._1, accum._2 :+ toPush), nl)
+              })
+      }
+      case _ =>
+        println("empty case 001")
+        println("accum._2")
+        println(accum._2)
+        accum._2 match {
+           case h::t => {
+           println("empty case 002")
+           println("accum._1")//accum 1 always empty , why?
+           println(accum._1)
+             accum._1 find (_ == accum._2) match {
+                case Some(x) => {
+                    println("empty case 003")
+                    accum._1
+                }
+                case _ => {
+                    println("empty case 004")
+                    accum._1 :+ accum._2
+                }
+             }
+           }
+           case _ => {
+           println("empty case 5")
+            accum._1
+           }
+        }
+    }
+}
+

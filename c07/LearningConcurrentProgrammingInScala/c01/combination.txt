@@ -1,0 +1,288 @@
+A B C D
+req (3)
+4!
+(3!)(1!) = 4
+A
+
+    AB
+
+
+         ABC
+
+         ABD
+
+    AC
+         ACD
+B
+
+    BC
+         BCD
+
+
+    BD
+
+
+C
+
+    CD
+
+
+D
+
+
+4! = 1 * 2 * 3 * 4/2*2
+(2!)(2!)
+
+A
+
+   AB
+
+
+
+
+   AC
+
+
+
+
+   AD
+
+
+
+B
+
+   BC
+
+
+   BD
+
+C
+
+   CD
+
+D
+
+A B C D E
+req(3)
+5!/(2!3!) = 1.2.3.4.5/(2.2.3) = 10
+
+A
+    AB
+           ABC
+
+
+           ABC
+
+
+           ABD
+
+           ABE
+
+
+    AC
+           ACD
+
+           ACE
+
+
+
+    AD
+           ADE
+
+
+
+    AE
+
+
+
+
+B
+
+    BC
+
+           BCD
+
+
+           BCE
+
+
+
+
+    BD
+
+
+           BDE
+
+
+
+
+    BE
+
+
+
+
+
+C
+
+     CD
+
+            CDE
+
+
+
+     CE
+
+
+
+D
+
+     DE
+
+
+
+E
+
+     E
+
+=================================
+A B C D E
+
+A
+    B
+
+         C
+
+         D
+
+         E
+
+
+    C
+         D
+
+         E
+
+    D
+         E
+
+
+    E
+
+
+B
+    C
+
+         D
+
+             E
+
+
+         E
+
+
+    D
+
+
+         E
+
+
+    E
+
+C
+
+     D
+
+
+          E
+
+
+
+     E
+
+
+D
+
+
+     E
+
+E
+=================================
+
+
+val list = List("A", "B", "C", "D")
+val num = 2
+val zp = list.zipWithIndex
+zp.map((x) => {
+    val (h, t) = list splitAt(x._2)
+    t.tail
+})
+
+def innerComb[T](depth: Int, accum: (List[List[T]], List[T]), list: List[T]): List[List[T]] =  {
+   if (depth < 0) {
+      accum._1
+   }
+   else if (depth == 0) {
+     val tr = accum._1 :+ accum._2
+     innerComb(depth - 1, (tr, List(): List.empty[T], list)
+   }
+   else {
+      if (list.length < depth) {
+        accum._1
+      }
+      else {
+        val zipped = list.zipWithIndex
+        zipped.flatMap((x) => {
+           val (h, t) = list splitAt (x._2)
+           val toPush = t.head
+           innerComb(depth - 1, (accum._1, accum._2 :+ toPush), t._tail)
+
+        })
+      }
+   }
+}
+
+
+val list = List("A", "B", "C", "D", "E")
+val zipped = list.zipWithIndex
+
+val splitted = zipped.map((x) => {
+  val rems = (list splitAt (x._2))._2
+  (rems.head, rems.tail)
+
+ }
+)
+
+def innerComb[T](requiredDepth: Int, currDepth: Int, list: List[T], accum: (List[List[T]], List[T])) : List[List[T]] = {
+    if (currDepth == requiredDepth) {
+        if (accum._2.length > 0) {
+            accum._1 :+ accum._2
+        }
+        else {
+            accum._1
+        }
+    }
+    else {
+        val zipped = list.zipWithIndex
+
+        val split = zipped.map((x) => {
+          val rems = (list splitAt (x._2))._2
+          (rems.head, rems.tail)
+         })
+        split.flatMap((x) => {
+          if ((x._2.length  + 1)< (requiredDepth - currDepth)) {
+            List()
+          }
+          else {
+            val newAcc = x._1 +: accum._2
+            innerComb(requiredDepth, currDepth + 1, x._2, (accum._1, newAcc))
+          }
+        })
+    }
+}
+
+def combination[T](required: Int, list: List[T]) : List[List[T]] = {
+  innerComb(required, 0, list, (List.empty:List[List[T]], List.empty:List[T]))
+}
+
+
+combination(3, List("A", "B", "C", "D", "E"))

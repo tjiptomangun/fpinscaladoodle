@@ -1,9 +1,11 @@
-package v2_loop_without_quit
+package v3_loop_with_quit
 
 import monads.{IO, Monad, StateT}
 
-object LoopWithoutQuitNoDebug extends  App {
-  def getLine(): IO[String] = IO(scala.io.StdIn.readLine())
+
+object LoopWithQuitNoDebug extends  App {
+
+  def getLine() : IO[String] = IO(scala.io.StdIn.readLine())
   def putStr(s: String): IO[Unit] = IO(print(s))
 
   def toInt(s: String): Int = {
@@ -51,29 +53,21 @@ object LoopWithoutQuitNoDebug extends  App {
   // new versions of the i/o functions that uses StateT
   def getLineAsStateT(): StateT[IO, SumState, String]  = liftIOIntoStateT(getLine)
   def putStrAsStateT(s: String) : StateT[IO, SumState, Unit] = liftIOIntoStateT(putStr(s))
-/*
-  in for comprehension the last part (map part) is evaluated first and next flatMap above it
-  and continue until the flatMap of the first generator.
-    the left part of flatMap generator like `u` in below example is something that is used
-    as first generator flatMap variable.
-  for {
-    u <- Some(c)
-    v <- Some(d)
-  } yield u + v
 
-   so u above translation is  like Some(c).flatMap((u) -> Some(d).map((v)=> { u + v}))
-  */
   def sumLoop: StateT[IO, SumState, Unit] = for {
     _     <- putStrAsStateT("\ngive me an int: ")
     input <- getLineAsStateT //see that StateT flatMap takes a function with input A and return StateT
-    i     <- liftIOIntoStateT(IO(toInt(input))) //that is why we can toInt (input), because input type is A
-    _     <- doSumWithStateT(i)
-    _     <- sumLoop
+    _     <- if (input == "q") {
+              liftIOIntoStateT(IO(()))
+             }
+            else for {
+              i     <- liftIOIntoStateT(IO(toInt(input))) //that is why we can toInt (input), because input type is A
+              _     <- doSumWithStateT(i)
+              _     <- sumLoop
+            } yield ()
   } yield ()
-  getLineAsStateT
 
+  val result = sumLoop.run(SumState(0)).run
+  println(s"Final SumState: ${result}")
 
-//  val result: (SumState, Unit) = sumLoop.run(SumState(0)).run
-//
-//  println(s"Final SumState: ${result._1}")
 }

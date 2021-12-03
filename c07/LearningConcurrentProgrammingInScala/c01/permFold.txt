@@ -1,0 +1,195 @@
+List("A", "B", "C", "A").foldLeft(List():List[List[String]])((b, a) => {
+    b.find(_ == List(a)) match {
+      case Some(x) =>
+        b
+      case _ => {
+        b:+List(a)
+      }
+    }
+
+})
+
+val list = List("A", "B")
+val zipped = list.zipWithIndex
+zipped.foldLeft
+/**
+ * 1. accept a list
+ * 2. zip with index
+ * 3. for each elems that is tuple (elem, index)
+ *    a. get elem at index, store in accum
+ *    b. remove elem at index
+ *    c. for the rest of elems, go to  1
+ *
+ * where to put this accum then ?
+ * can we use foldLeft ?
+ * with triplet as accum
+ * first element is List to List to store accum
+ * second element is List that store ongoing added
+ * third is to store reduced list.
+ * too complicated since we can not change the list
+ * used for foldLeft which in our case is third part of the
+ * triplet.
+ * but can we make this inner function to we pass to
+ * foldLeft to also used in inner foldLeft ?
+ */
+
+ /**
+  * let us use pure recursive
+  * the function receives three parameters
+  * the first is List to List to store accum
+  * second element is List that store ongoing added
+  * third is to store reduced list
+  */
+  //play with this, but remember to filter already existing element
+  //ini harusnya bisa dimulai dari belakang, apakah  accum._2 ada di accum._1
+  //jadi accum._1 ditambahkan dari belakang
+  //dan accum._1 bukan menyimpan list complete permuatation tapi
+  //list substring permutation sampai batas n dari belakang
+
+  A B C
+
+  A   remove A(0), remainder B C
+
+      B remove B(0) remainder C
+           C  remove C remainder Nil
+
+      C remove C(1) remainder B
+           B  remove B(0)  remainder Nil
+
+  B   remove B(1), remainder A C
+
+       A remove A (0) remainder C
+
+            C remove C(0) remainder
+
+
+       C
+
+            A
+
+  C
+
+        A
+
+            B
+
+        B
+
+            C
+
+
+
+
+
+
+def terong0[T](list: List[T]): List[List[T]]= {
+    val z = list.zipWithIndex
+    z map((x) =>  {
+       val (l1, l2) = list splitAt(x._2)
+       l1 ++ l2.tail
+    })
+}
+
+def terong1[T](list: List[T], accum: List[List[T]]): List[List[T]] = {
+   list match {
+     case h::t => {
+        val acc = accum:+ list
+        terong0(list) flatMap((x) => {
+           terong1(x, acc)
+        })
+     }
+     case _ =>
+       accum
+   }
+
+}
+
+def terong1[T](list: List[T]): List[List[T]] = {
+   terong0(list) flatMap((x) => {
+       terong0(x)
+   })
+}
+
+def terong1[T](list: List[T]): List[List[T]] = {
+   terong0(list) flatMap((x) => {
+       terong1(x)
+   })
+}
+
+def terong0[T](list: List[T]): List[List[T]]= {
+    val z = list.zipWithIndex
+    z map((x) =>  {
+       val (l1, l2) = list splitAt(x._2)
+       l1 ++ l2.tail
+    })
+}
+
+def terong0[T](list: List[T]): List[List[T]]= {
+    val z = list.zipWithIndex
+    z map((x) =>  {
+       val (l1, l2) = list splitAt(x._2)
+       terong(l1 ++ l2.tail)
+    })
+}
+
+def terong1[T](list: List[T]): List[List[T]] = {
+    list match {
+     case h::t =>
+        terong0(list)
+      case _ =>
+         List(list)
+    }
+}
+terong1(List("A", "B", "C"))
+
+def terong[T](list: List[T]): Any = {
+    val z = list.zipWithIndex
+    def inter(a0: List[(T, Int)], a1: List[T]): Any = {
+       val b0 = z flatMap((x) => {
+          val (l1, l2) = a1 splitAt (x._2)
+          val nl = l1 ++ l2.tail
+          nl
+       })
+    }
+}
+
+  case C D only
+
+
+  A B C D
+
+  A (0)
+  Add (0) to accum._2
+  remove (0)
+  remainder B(0) C(1) D(2)
+        B add(0) to accum._2
+        remove(0)
+        remainder C(0) D(1)
+                   C add (0) to accum._2
+                   remove (0)
+                   remainder  D (0)
+                             D   add (0) to accum._2
+                             remove (0)
+                             remainder   Nil
+                             if (accum._2 not in accum._1) return accum._1 + accum._2 else return accum._1
+
+
+                   D add (1) to accum
+                   remove (1)
+                   remainder  C (0)
+                              remove (0)
+                              C   remainder   Nil
+
+        C remove(1)  remainder B(0) D(1)
+                   B remove (1)  remainder D(4)
+                             D   remainder  Nil
+
+                   D remove (4)  remainder B(1)
+                             B   remainder  Nil
+
+
+        D remove(3)  remainder B(1) C(2)
+                   B remove(1)   remainder C(2)
+                             C   remainder  Nil
+                   C remove(2)   remainder B(1)
+                             B   remainder  Nil

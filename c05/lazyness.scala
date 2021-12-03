@@ -3,10 +3,13 @@
 //while non lazy variables will evaluated once the class is instatiated
 //both lazy and strict variables will evaluate once, even if these variables referenced 
 //many times
-//: => Int is non strict, or lazy parameter
-//it is just a common function with zero parameter
-//: => is just syntactic alias of : () =>
+//x : => Int is non strict, or lazy parameter
+//it is just a common function with zero parameter ? NO (But perhaps yes)
+//x : => is just  syntactic alias of : () => ? NO (But perhaps yes) -> See function whatIf at the bottom
+//To be more precise x: => is call by name parameters
 //() => is syntactic alias for the type Function0[A]
+//
+//https://stackoverflow.com/questions/9809313/scalas-lazy-arguments-how-do-they-work
 def atest(in1 : => Int) : Int = {
 	println(1)			
 	1
@@ -48,8 +51,8 @@ def dfun = {
 
 def dtest(cond: => Boolean, a: => Int, b: => Int, c: => Int, d: => Int): Int = {
 	if (cond) 
-		if (a > 1)//if cond == true then a will print twice, because it is a function
-			if (b > 1) 
+		if (a > 1)//if cond == true then a will print twice, because it is a function. This is the first print 1
+			if (b > 1) //also note that afun is 1, so it will never pass second cond (a>1);
 				if (c > 1)
 					if (d > 1) 
 						d
@@ -60,7 +63,7 @@ def dtest(cond: => Boolean, a: => Int, b: => Int, c: => Int, d: => Int): Int = {
 			else
 				b + 1
 		else
-			a + 1
+			a + 1//this is the second time print 1
 	else
 		100
 }
@@ -180,7 +183,7 @@ def htest(cond: => Boolean, a: => Int, b: => Int, c: => Int, d: => Int): Int = {
 			else
 				bval + 1
 		else
-			aval
+			aval + 1
 	else
 		100
 }
@@ -214,4 +217,13 @@ Y1.y //no delay
 X1.x
 Y1.y
 
+def whatIf(a: () => Int) : Int = {
+	a()
+}
 
+//whatIf (afun) => not working
+def xfun() : Int = { return 10}
+whatIf (xfun) //working
+//Isn't this just mean that afun not take parameter and xfun take parameter
+//and whatIf signature match to xfun ?. But since afun do not accept parameter
+//It is evaluated event without ().
